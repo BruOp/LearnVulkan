@@ -140,6 +140,8 @@ void HelloTriangleApplication::createLogicalDevice()
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create logical device!");
 	}
+
+	vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
 }
 
 void HelloTriangleApplication::createInstance()

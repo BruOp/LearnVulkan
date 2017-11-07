@@ -28,6 +28,7 @@ private:
 	VkDebugReportCallbackEXT callback;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device;
+	VkQueue graphicsQueue;
 
 	static const std::vector<const char*> validationLayers;
 
