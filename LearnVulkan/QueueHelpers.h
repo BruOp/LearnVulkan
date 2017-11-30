@@ -9,7 +9,8 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 
-namespace QueueHelpers {
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-	bool isDeviceSuitable(VkPhysicalDevice device);
+namespace QueueHelpers
+{
+	QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice device, const VkSurfaceKHR surface);
+	bool isDeviceSuitable(const VkPhysicalDevice device, const VkSurfaceKHR surface);
 }

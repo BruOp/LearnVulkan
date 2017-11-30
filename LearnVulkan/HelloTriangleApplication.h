@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef GLFW_INCLUDE_VULKAN
-	#define GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_VULKAN
 #endif // !GLFW_INCLUDE_VULKAN
 
 #include <GLFW/glfw3.h>
@@ -11,11 +11,13 @@
 #include <functional>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #include "QueueFamilyIndices.h"
 #include "QueueHelpers.h"
 
-class HelloTriangleApplication {
+class HelloTriangleApplication
+{
 public:
 	HelloTriangleApplication(const int width, const int height);
 
@@ -26,9 +28,11 @@ private:
 	VkInstance instance;
 	GLFWwindow* window;
 	VkDebugReportCallbackEXT callback;
+	VkSurfaceKHR surface;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device;
 	VkQueue graphicsQueue;
+	VkQueue presentQueue; // 'Present' as in Presentation
 
 	static const std::vector<const char*> validationLayers;
 
@@ -41,7 +45,6 @@ private:
 	void cleanup();
 
 	void pickPhysicalDevice();
-	bool isDeviceSuitable(VkPhysicalDevice device);
 
 	void createLogicalDevice();
 
@@ -58,6 +61,8 @@ private:
 
 	void setupDebugCallback();
 
+	void createSurface();
+
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugReportFlagsEXT flags,
 		VkDebugReportObjectTypeEXT objType,
@@ -69,4 +74,5 @@ private:
 		void* userData
 	);
 
+	static bool isDeviceSuitable(const VkPhysicalDevice& device);
 };

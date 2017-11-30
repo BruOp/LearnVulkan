@@ -1,7 +1,9 @@
 #include "QueueHelpers.h"
 
-namespace QueueHelpers {
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+namespace QueueHelpers
+{
+	QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice device, const VkSurfaceKHR surface)
+	{
 		QueueFamilyIndices indices;
 
 		uint32_t queueFamilyCount = 0;
@@ -16,6 +18,12 @@ namespace QueueHelpers {
 				indices.graphicsFamily = i;
 			}
 
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+			if (queueFamily.queueCount > 0 && presentSupport) {
+				indices.presentFamily = i;
+			}
+
 			if (indices.isComplete()) {
 				break;
 			}
@@ -26,9 +34,9 @@ namespace QueueHelpers {
 		return indices;
 	}
 
-	bool isDeviceSuitable(VkPhysicalDevice device)
+	bool isDeviceSuitable(const VkPhysicalDevice device, const VkSurfaceKHR surface)
 	{
-		QueueFamilyIndices indices = findQueueFamilies(device);
+		QueueFamilyIndices indices = findQueueFamilies(device, surface);
 		return indices.isComplete();
 	}
 }
