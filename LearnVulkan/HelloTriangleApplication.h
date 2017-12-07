@@ -15,6 +15,7 @@
 
 #include "QueueFamilyIndices.h"
 #include "QueueHelpers.h"
+#include "SwapChainSupportDetails.h"
 
 class HelloTriangleApplication
 {
@@ -62,6 +63,14 @@ private:
 	void setupDebugCallback();
 
 	void createSurface();
+
+	void createSwapChain();
+
+	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+
+	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+
+	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugReportFlagsEXT flags,

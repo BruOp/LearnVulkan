@@ -159,8 +159,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
     <ClCompile Include="QueueHelpers.cpp" />
+    <ClCompile Include="SwapChainSupportDetails.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="QueueHelpers.h" />
     <ClInclude Include="HelloTriangleApplication.h" />
     <ClInclude Include="QueueFamilyIndices.h" />
