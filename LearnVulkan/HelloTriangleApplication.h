@@ -34,6 +34,13 @@ private:
 	VkDevice device;
 	VkQueue graphicsQueue;
 	VkQueue presentQueue; // 'Present' as in Presentation
+	VkSwapchainKHR swapchain;
+
+	VkFormat swapchainImageFormat;
+	VkExtent2D swapchainExtent;
+
+	std::vector<VkImage> swapchainImages;
+	std::vector<VkImageView> swapchainImageViews;
 
 	static const std::vector<const char*> validationLayers;
 
@@ -49,11 +56,6 @@ private:
 
 	void createLogicalDevice();
 
-	/*bool checkExtensionSupport(
-		const std::vector<VkExtensionProperties>& extensions,
-		const uint32_t glfwExtensionCount,
-		const char** glfwExtensions) const;*/
-
 	bool checkValidationLayerSupport();
 
 	std::vector<const char*> getRequiredExtensions();
@@ -65,6 +67,8 @@ private:
 	void createSurface();
 
 	void createSwapChain();
+
+	void createImageViews();
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
