@@ -43,7 +43,9 @@ private:
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> swapchainImageViews;
 
+	VkRenderPass renderPass;
 	VkPipelineLayout pipelineLayout;
+	VkPipeline graphicsPipeline;
 
 	static const std::vector<const char*> validationLayers;
 
@@ -72,6 +74,8 @@ private:
 	void createSwapChain();
 
 	void createImageViews();
+
+	void createRenderPass();
 
 	void createGraphicsPipeline();
 
