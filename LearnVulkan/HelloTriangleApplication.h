@@ -12,6 +12,7 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <fstream>
 
 #include "QueueFamilyIndices.h"
 #include "QueueHelpers.h"
@@ -42,6 +43,8 @@ private:
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> swapchainImageViews;
 
+	VkPipelineLayout pipelineLayout;
+
 	static const std::vector<const char*> validationLayers;
 
 	void initWindow();
@@ -70,6 +73,10 @@ private:
 
 	void createImageViews();
 
+	void createGraphicsPipeline();
+
+	VkShaderModule createShaderModule(const std::vector<char>& code);
+
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -88,4 +95,6 @@ private:
 	);
 
 	static bool isDeviceSuitable(const VkPhysicalDevice& device);
+
+	static std::vector<char> readFile(const std::string& filename);
 };
