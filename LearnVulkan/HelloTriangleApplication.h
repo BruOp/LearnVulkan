@@ -36,12 +36,15 @@ private:
 	VkQueue graphicsQueue;
 	VkQueue presentQueue; // 'Present' as in Presentation
 	VkSwapchainKHR swapchain;
+	VkCommandPool commandPool;
 
 	VkFormat swapchainImageFormat;
 	VkExtent2D swapchainExtent;
 
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> swapchainImageViews;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
+	std::vector<VkCommandBuffer> commandBuffers;
 
 	VkRenderPass renderPass;
 	VkPipelineLayout pipelineLayout;
@@ -54,6 +57,8 @@ private:
 	void initVulkan();
 
 	void mainLoop();
+
+	void drawFrame();
 
 	void cleanup();
 
@@ -78,6 +83,12 @@ private:
 	void createRenderPass();
 
 	void createGraphicsPipeline();
+
+	void createFramebuffers();
+
+	void createCommandPool();
+
+	void createCommandBuffers();
 
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
