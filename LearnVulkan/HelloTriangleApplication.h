@@ -50,6 +50,9 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
 
+	VkSemaphore imageAvailableSemaphore;
+	VkSemaphore renderFinishedSemaphore;
+
 	static const std::vector<const char*> validationLayers;
 
 	void initWindow();
@@ -89,6 +92,8 @@ private:
 	void createCommandPool();
 
 	void createCommandBuffers();
+
+	void createSemaphores();
 
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
