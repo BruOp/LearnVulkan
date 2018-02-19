@@ -65,6 +65,8 @@ private:
 
 	void cleanup();
 
+	void cleanupSwapChain();
+
 	void pickPhysicalDevice();
 
 	void createLogicalDevice();
@@ -95,6 +97,8 @@ private:
 
 	void createSemaphores();
 
+	void recreateSwapChain();
+
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -117,4 +121,6 @@ private:
 	static bool isDeviceSuitable(const VkPhysicalDevice& device);
 
 	static std::vector<char> readFile(const std::string& filename);
+
+	static void onWindowResize(GLFWwindow* window, int width, int height);
 };
