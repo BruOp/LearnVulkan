@@ -17,6 +17,7 @@
 #include "QueueFamilyIndices.h"
 #include "QueueHelpers.h"
 #include "SwapChainSupportDetails.h"
+#include "Vertex.h"
 
 class HelloTriangleApplication
 {
@@ -52,6 +53,9 @@ private:
 
 	VkSemaphore imageAvailableSemaphore;
 	VkSemaphore renderFinishedSemaphore;
+
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
 
 	static const std::vector<const char*> validationLayers;
 
@@ -93,11 +97,16 @@ private:
 
 	void createCommandPool();
 
+	void createVertexBuffer();
+
 	void createCommandBuffers();
 
 	void createSemaphores();
 
 	void recreateSwapChain();
+
+	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
@@ -106,6 +115,8 @@ private:
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugReportFlagsEXT flags,
