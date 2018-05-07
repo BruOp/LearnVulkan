@@ -56,6 +56,8 @@ private:
 
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
 
 	static const std::vector<const char*> validationLayers;
 
@@ -98,6 +100,8 @@ private:
 	void createCommandPool();
 
 	void createVertexBuffer();
+
+	void createIndexBuffer();
 
 	void createCommandBuffers();
 
