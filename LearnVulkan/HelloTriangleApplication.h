@@ -1,9 +1,6 @@
 #pragma once
 
-#ifndef GLFW_INCLUDE_VULKAN
-#define GLFW_INCLUDE_VULKAN
-#endif // !GLFW_INCLUDE_VULKAN
-
+#include <vulkan\vulkan.hpp>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
@@ -28,36 +25,37 @@ public:
 
 private:
 	int width, height;
-	VkInstance instance;
+
+	vk::Instance instance;
 	GLFWwindow* window;
-	VkDebugReportCallbackEXT callback;
-	VkSurfaceKHR surface;
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-	VkDevice device;
-	VkQueue graphicsQueue;
-	VkQueue presentQueue; // 'Present' as in Presentation
-	VkSwapchainKHR swapchain;
-	VkCommandPool commandPool;
+	vk::DebugReportCallbackEXT callback;
+	vk::SurfaceKHR surface;
+	vk::PhysicalDevice physicalDevice;
+	vk::Device device;
+	vk::Queue graphicsQueue;
+	vk::Queue presentQueue; // 'Present' as in Presentation
+	vk::SwapchainKHR swapchain;
+	vk::CommandPool commandPool;
 
-	VkFormat swapchainImageFormat;
-	VkExtent2D swapchainExtent;
+	vk::Format swapchainImageFormat;
+	vk::Extent2D swapchainExtent;
 
-	std::vector<VkImage> swapchainImages;
-	std::vector<VkImageView> swapchainImageViews;
-	std::vector<VkFramebuffer> swapChainFramebuffers;
-	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<vk::Image> swapchainImages;
+	std::vector<vk::ImageView> swapchainImageViews;
+	std::vector<vk::Framebuffer> swapChainFramebuffers;
+	std::vector<vk::CommandBuffer> commandBuffers;
 
-	VkRenderPass renderPass;
-	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
+	vk::RenderPass renderPass;
+	vk::PipelineLayout pipelineLayout;
+	vk::Pipeline graphicsPipeline;
 
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore;
+	vk::Semaphore imageAvailableSemaphore;
+	vk::Semaphore renderFinishedSemaphore;
 
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
+	vk::Buffer vertexBuffer;
+	vk::DeviceMemory vertexBufferMemory;
+	vk::Buffer indexBuffer;
+	vk::DeviceMemory indexBufferMemory;
 
 	static const std::vector<const char*> validationLayers;
 
@@ -73,7 +71,11 @@ private:
 
 	void cleanupSwapChain();
 
+	void createInstance();
+
 	void pickPhysicalDevice();
+
+	void createSurface();
 
 	void createLogicalDevice();
 
@@ -81,11 +83,7 @@ private:
 
 	std::vector<const char*> getRequiredExtensions();
 
-	void createInstance();
-
 	void setupDebugCallback();
-
-	void createSurface();
 
 	void createSwapChain();
 
@@ -109,22 +107,23 @@ private:
 
 	void recreateSwapChain();
 
-	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
+	void copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 
-	VkShaderModule createShaderModule(const std::vector<char>& code);
+	vk::ShaderModule createShaderModule(const std::vector<char>& code);
 
-	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 
-	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 
-	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
 
-	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-		VkDebugReportFlagsEXT flags,
-		VkDebugReportObjectTypeEXT objType,
+	//static vk::DebugReportCallbackCreateInfoEXT::pfnCallback debugCallback()
+	static vk::Bool32 debugCallback(
+		vk::DebugReportFlagsEXT flags,
+		vk::DebugReportObjectTypeEXT objType,
 		uint64_t obj,
 		size_t location,
 		int32_t code,
@@ -133,7 +132,7 @@ private:
 		void* userData
 	);
 
-	static bool isDeviceSuitable(const VkPhysicalDevice& device);
+	static bool isDeviceSuitable(const vk::PhysicalDevice& device);
 
 	static std::vector<char> readFile(const std::string& filename);
 

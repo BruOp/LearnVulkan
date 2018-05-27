@@ -1,20 +1,15 @@
 #pragma once
 
-#ifndef GLFW_INCLUDE_VULKAN
-#define GLFW_INCLUDE_VULKAN
-#endif // !GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
-
+#include<vulkan/vulkan.hpp>
 #include <vector>
 
 struct SwapChainSupportDetails
 {
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> presentationModes;
+	vk::SurfaceCapabilitiesKHR capabilities;
+	std::vector<vk::SurfaceFormatKHR> formats;
+	std::vector<vk::PresentModeKHR> presentationModes;
 
 	bool adequate() const;
 
-	static SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice device, const VkSurfaceKHR surface);
+	static SwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice device, const vk::SurfaceKHR surface);
 };
