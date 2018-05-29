@@ -1,9 +1,10 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+
 #include "QueueFamilyIndices.h"
 #include "SwapChainSupportDetails.h"
 
-#include <vulkan/vulkan.hpp>
 #include <vector>
 #include <set>
 

@@ -14,7 +14,7 @@ VkResult CreateDebugReportCallbackEXT(vk::Instance instance, const VkDebugReport
 {
 	auto func = (PFN_vkCreateDebugReportCallbackEXT)instance.getProcAddr("vkCreateDebugReportCallbackEXT");
 	if (func != nullptr) {
-		func(static_cast<VkInstance>(instance), pCreateInfo, pAllocator, pCallback);
+		func((VkInstance)instance, pCreateInfo, pAllocator, pCallback);
 	} else {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
@@ -24,7 +24,7 @@ void DestroyDebugReportCallbackEXT(vk::Instance instance, VkDebugReportCallbackE
 {
 	auto func = (PFN_vkDestroyDebugReportCallbackEXT)instance.getProcAddr("vkDestroyDebugReportCallbackEXT");
 	if (func != nullptr) {
-		func(static_cast<VkInstance>(instance), callback, pAllocator);
+		func((VkInstance)instance, callback, pAllocator);
 	}
 }
 
