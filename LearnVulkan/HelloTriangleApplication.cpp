@@ -14,7 +14,7 @@ VkResult CreateDebugReportCallbackEXT(vk::Instance instance, const VkDebugReport
 {
 	auto func = (PFN_vkCreateDebugReportCallbackEXT)instance.getProcAddr("vkCreateDebugReportCallbackEXT");
 	if (func != nullptr) {
-		func((VkInstance)instance, pCreateInfo, pAllocator, pCallback);
+		return func((VkInstance)instance, pCreateInfo, pAllocator, pCallback);
 	} else {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
@@ -167,7 +167,7 @@ void HelloTriangleApplication::cleanup()
 	device.destroyCommandPool(commandPool);
 
 	device.destroy();
-	instance.destroyDebugReportCallbackEXT(vk::DebugReportCallbackEXT(callback));
+	DestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	instance.destroySurfaceKHR(surface);
 	instance.destroy();
 	glfwDestroyWindow(window);
@@ -205,7 +205,7 @@ void HelloTriangleApplication::createInstance()
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = "No Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.apiVersion = 1;
+	appInfo.apiVersion = VK_API_VERSION_1_1;
 
 	vk::InstanceCreateInfo createInfo = {};
 	createInfo.pApplicationInfo = &appInfo;
@@ -220,8 +220,7 @@ void HelloTriangleApplication::createInstance()
 	} else {
 		createInfo.enabledLayerCount = 0;
 	}
-
-	vk::createInstance(createInfo, nullptr, instance);
+	instance = vk::createInstance(createInfo, nullptr);
 }
 
 void HelloTriangleApplication::pickPhysicalDevice()
@@ -250,6 +249,7 @@ void HelloTriangleApplication::createSurface()
 	if (glfwCreateWindowSurface(static_cast<VkInstance>(instance), window, nullptr, &vanillaVkSurface) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create a window surface!");
 	}
+	surface = vk::SurfaceKHR{ vanillaVkSurface };
 }
 
 void HelloTriangleApplication::createLogicalDevice()
@@ -297,7 +297,10 @@ void HelloTriangleApplication::setupDebugCallback()
 	createDebugInfo.flags = vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning;
 	createDebugInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)debugCallback;
 
-	instance.createDebugReportCallbackEXT(&createDebugInfo, nullptr, &callback);
+	VkResult res = CreateDebugReportCallbackEXT(instance, &(VkDebugReportCallbackCreateInfoEXT)createDebugInfo, nullptr, &callback);
+	if (res != VK_SUCCESS) {
+		throw std::runtime_error("Failed to set up debug callback");
+	}
 }
 
 std::vector<const char*> HelloTriangleApplication::getRequiredExtensions()
@@ -636,7 +639,7 @@ void HelloTriangleApplication::createIndexBuffer()
 	vk::Buffer stagingBuffer;
 	vk::DeviceMemory stagingBufferMemory;
 	
-	createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+	createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 	void* data = device.mapMemory(stagingBufferMemory, 0, bufferSize);
 		memcpy(data, indices.data(), (size_t)bufferSize);

@@ -22,7 +22,7 @@ SwapChainSupportDetails SwapChainSupportDetails::querySwapChainSupport(
 	}
 
 	uint32_t presentModeCount;
-	device.getSurfacePresentModesKHR(surface, &presentModeCount);
+	device.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
 
 	if (presentModeCount > 0) {
 		details.presentationModes.resize(presentModeCount);

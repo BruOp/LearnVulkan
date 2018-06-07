@@ -28,7 +28,7 @@ private:
 
 	vk::Instance instance;
 	GLFWwindow* window;
-	vk::DebugReportCallbackEXT callback;
+	VkDebugReportCallbackEXT callback; // Keeping this vanilla to spare myself some headaches
 	vk::SurfaceKHR surface;
 	vk::PhysicalDevice physicalDevice;
 	vk::Device device;
