@@ -10,11 +10,14 @@
 #include <algorithm>
 #include <set>
 #include <fstream>
+#include <chrono>
 
 #include "QueueFamilyIndices.h"
 #include "QueueHelpers.h"
 #include "SwapChainSupportDetails.h"
 #include "Vertex.h"
+#include "TransformationBufferObject.h"
+
 
 class HelloTriangleApplication
 {
@@ -46,6 +49,7 @@ private:
 	std::vector<vk::CommandBuffer> commandBuffers;
 
 	vk::RenderPass renderPass;
+	vk::DescriptorSetLayout descriptorSetLayout;
 	vk::PipelineLayout pipelineLayout;
 	vk::Pipeline graphicsPipeline;
 
@@ -56,6 +60,12 @@ private:
 	vk::DeviceMemory vertexBufferMemory;
 	vk::Buffer indexBuffer;
 	vk::DeviceMemory indexBufferMemory;
+
+	std::vector<vk::Buffer> uniformBuffers;
+	std::vector<vk::DeviceMemory> uniformBuffersMemory;
+
+	vk::DescriptorPool descriptorPool;
+	std::vector<vk::DescriptorSet> descriptorSets;
 
 	static const std::vector<const char*> validationLayers;
 
@@ -91,6 +101,8 @@ private:
 
 	void createRenderPass();
 
+	void createDescriptorSetLayout();
+
 	void createGraphicsPipeline();
 
 	void createFramebuffers();
@@ -101,6 +113,12 @@ private:
 
 	void createIndexBuffer();
 
+	void createUniformBuffers();
+	
+	void createDescriptorPool();
+
+	void createDescriptorSets();
+
 	void createCommandBuffers();
 
 	void createSemaphores();
@@ -109,6 +127,8 @@ private:
 
 	void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
 	void copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
+
+	void updateUniformBuffer(uint32_t currentImage);
 
 	vk::ShaderModule createShaderModule(const std::vector<char>& code);
 
