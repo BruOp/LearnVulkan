@@ -18,6 +18,7 @@
 #include "Vertex.h"
 #include "TransformationBufferObject.h"
 
+#include "Pipeline.h"
 
 class HelloTriangleApplication
 {
@@ -50,8 +51,8 @@ private:
 
 	vk::RenderPass renderPass;
 	vk::DescriptorSetLayout descriptorSetLayout;
-	vk::PipelineLayout pipelineLayout;
-	vk::Pipeline graphicsPipeline;
+	vk::UniquePipelineLayout pipelineLayout;
+	vk::UniquePipeline graphicsPipeline;
 
 	vk::Semaphore imageAvailableSemaphore;
 	vk::Semaphore renderFinishedSemaphore;

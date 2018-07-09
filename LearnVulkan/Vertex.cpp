@@ -10,9 +10,9 @@ vk::VertexInputBindingDescription Vertex::getBindingDescription()
 	return bindingDescription;
 }
 
-std::array<vk::VertexInputAttributeDescription, 2> Vertex::getAttributeDescriptions()
+std::vector<vk::VertexInputAttributeDescription> Vertex::getAttributeDescriptions()
 {
-	std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions = {};
+	std::vector<vk::VertexInputAttributeDescription> attributeDescriptions(2);
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
 	attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;

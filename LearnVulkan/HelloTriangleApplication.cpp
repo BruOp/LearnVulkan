@@ -197,8 +197,9 @@ void HelloTriangleApplication::cleanupSwapChain()
 
 	device.freeCommandBuffers(commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 	
-	device.destroyPipeline(graphicsPipeline);
-	device.destroyPipelineLayout(pipelineLayout);
+	device.destroyPipeline(graphicsPipeline.get());
+	device.destroyPipelineLayout(pipelineLayout.get());
+
 	device.destroyRenderPass(renderPass);
 
 	for (auto imageView : swapchainImageViews) {
@@ -508,100 +509,21 @@ void HelloTriangleApplication::createGraphicsPipeline()
 	vk::ShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 	vk::ShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
-	vk::PipelineShaderStageCreateInfo vertShaderStageInfo = {};
-	vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex;
-	vertShaderStageInfo.module = vertShaderModule;
-	vertShaderStageInfo.pName = "main";
-	// Note to self: keep pSpecializationInfo in mind when working with Vulkan shaders
-
-	vk::PipelineShaderStageCreateInfo fragShaderStageInfo = {};
-	fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment;
-	fragShaderStageInfo.module = fragShaderModule;
-	fragShaderStageInfo.pName = "main";
-
-	vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
 	auto bindingDescription = Vertex::getBindingDescription();
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
-	vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	pipelineLayout = vkr::GraphicsPipeline::createPipelineLayout(device, descriptorSetLayout);
 
-	vk::PipelineInputAssemblyStateCreateInfo inputAssembly = {};
-	inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
-	inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-	vk::Viewport viewport = {};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = (float)swapchainExtent.width;
-	viewport.height = (float)swapchainExtent.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vk::Rect2D scissor = {};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapchainExtent;
-
-	vk::PipelineViewportStateCreateInfo viewportState = {};
-	viewportState.viewportCount = 1;
-	viewportState.pViewports = &viewport;
-	viewportState.scissorCount = 1;
-	viewportState.pScissors = &scissor;
-
-	vk::PipelineRasterizationStateCreateInfo rasterizer = {};
-	rasterizer.depthClampEnable = VK_FALSE;
-	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = vk::PolygonMode::eFill;
-	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
-	rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
-	rasterizer.depthBiasEnable = VK_FALSE;
-
-	vk::PipelineMultisampleStateCreateInfo multisampling = {};
-	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
-
-	vk::PipelineColorBlendAttachmentState colorBlendAttachment = {};
-	colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-	colorBlendAttachment.blendEnable = VK_FALSE;
-
-	vk::PipelineColorBlendStateCreateInfo colorBlending = {};
-	colorBlending.logicOpEnable = VK_FALSE;
-	colorBlending.logicOp = vk::LogicOp::eCopy;
-	colorBlending.attachmentCount = 1;
-	colorBlending.pAttachments = &colorBlendAttachment;
-	colorBlending.blendConstants[0] = 0.0f;
-	colorBlending.blendConstants[1] = 0.0f;
-	colorBlending.blendConstants[2] = 0.0f;
-	colorBlending.blendConstants[3] = 0.0f;
-
-	vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
-	pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-	device.createPipelineLayout(&pipelineLayoutInfo, nullptr, &pipelineLayout);
-
-	vk::GraphicsPipelineCreateInfo pipelineInfo = {};
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = shaderStages;
-	pipelineInfo.pVertexInputState = &vertexInputInfo;
-	pipelineInfo.pInputAssemblyState = &inputAssembly;
-	pipelineInfo.pViewportState = &viewportState;
-	pipelineInfo.pRasterizationState = &rasterizer;
-	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pColorBlendState = &colorBlending;
-	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = renderPass;
-	pipelineInfo.subpass = 0;
-
-	device.createGraphicsPipelines(vk::PipelineCache{}, 1, &pipelineInfo, nullptr, &graphicsPipeline);
-	device.destroyShaderModule(fragShaderModule, nullptr);
-	device.destroyShaderModule(vertShaderModule, nullptr);
+	graphicsPipeline = vkr::GraphicsPipeline::createPipeline(
+		device,
+		vertShaderModule,
+		fragShaderModule,
+		bindingDescription,
+		attributeDescriptions,
+		swapchainExtent,
+		pipelineLayout,
+		renderPass
+	);
 }
 
 void HelloTriangleApplication::createFramebuffers()
@@ -776,14 +698,22 @@ void HelloTriangleApplication::createCommandBuffers()
 		renderPassInfo.pClearValues = &clearColor;
 
 		commandBuffers[i].beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
-		commandBuffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline);
+		commandBuffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline.get());
 
 		vk::Buffer vertexBuffers[] = { vertexBuffer };
 		vk::DeviceSize offsets[] = { 0 };
 		commandBuffers[i].bindVertexBuffers(0, 1, vertexBuffers, offsets);
 
 		commandBuffers[i].bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
-		commandBuffers[i].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+		commandBuffers[i].bindDescriptorSets(
+			vk::PipelineBindPoint::eGraphics,
+			pipelineLayout.get(),
+			0,
+			1,
+			&descriptorSets[i],
+			0,
+			nullptr
+		);
 
 		commandBuffers[i].drawIndexed(static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		commandBuffers[i].endRenderPass();

@@ -3,55 +3,47 @@
 #include <utility>
 #include <vulkan/vulkan.hpp>
 
-namespace bvk
+namespace vkr
 {
-	class GraphicsPipeline
+	namespace GraphicsPipeline
 	{
-	public:
-		GraphicsPipeline();
-		~GraphicsPipeline() = default;
-		// No copying allowed
-		GraphicsPipeline(const GraphicsPipeline&) = delete;
-		GraphicsPipeline & operator=(const GraphicsPipeline&) = delete;
-		
-		// Moving is permitted
-		GraphicsPipeline(GraphicsPipeline&& pipeline);
-		GraphicsPipeline& operator=(GraphicsPipeline&& pipeline);
+		vk::PipelineShaderStageCreateInfo getVertexShaderStageInfo(const vk::ShaderModule & shaderModule);
+		vk::PipelineShaderStageCreateInfo getFragmentShaderStageInfo(const vk::ShaderModule & shaderModule);
 
-		void addInputAssembler(vk::PrimitiveTopology topology);
-
-		void addVertexShaderStage(
-			vk::ShaderModule shaderModule,
-			vk::VertexInputBindingDescription bindingDescription,
-			std::vector<vk::VertexInputAttributeDescription> attributeDescriptions
+		vk::PipelineVertexInputStateCreateInfo getVertexInputInfo(
+			const vk::VertexInputBindingDescription & bindingDescription,
+			const std::vector<vk::VertexInputAttributeDescription> & attributeDescriptions
 		);
 
-		void addFragmentShaderStage(vk::ShaderModule shaderModule);
-
-		void addViewportState(const vk::Extent2D & swapchainExtent);
-		void addRasterizer(
+		vk::PipelineInputAssemblyStateCreateInfo getInputAssemblerCreateInfo(
+			vk::PrimitiveTopology topology = vk::PrimitiveTopology::eTriangleList
+		);
+		
+		vk::PipelineViewportStateCreateInfo getViewportStateCreateInfo(const vk::Extent2D & swapchainExtent);
+		
+		vk::PipelineRasterizationStateCreateInfo getRasterizerCreateInfo(
 			const vk::PolygonMode polygonMode = vk::PolygonMode::eFill,
 			const vk::CullModeFlagBits cullMode = vk::CullModeFlagBits::eBack,
 			const vk::FrontFace frontFace = vk::FrontFace::eCounterClockwise
 		);
-
-
-	private:
-		vk::UniquePipeline _pipeline;
-		vk::UniquePipelineLayout _pipelineLayout;
 		
-		vk::PipelineShaderStageCreateInfo vertShaderStageInfo;
-		vk::PipelineShaderStageCreateInfo fragShaderStageInfo;
-		vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
-
-		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-		vk::PipelineViewportStateCreateInfo viewportState;
-
-		vk::PipelineRasterizationStateCreateInfo rasterizer;
-
-		void createPipeline(const vk::Device & device, const vk::DescriptorSetLayout & descriptorSetLayout, const vk::RenderPass & renderPass);
+		vk::UniquePipelineLayout createPipelineLayout(
+			const vk::Device & device,
+			const vk::DescriptorSetLayout & descriptorSetLayout
+		);
+		
+		vk::UniquePipeline createPipeline(
+			const vk::Device & device,
+			const vk::ShaderModule & vertShaderModule,
+			const vk::ShaderModule & fragShaderModule,
+			const vk::VertexInputBindingDescription & bindingDescription,
+			const std::vector<vk::VertexInputAttributeDescription> & attributeDescriptions,
+			const vk::Extent2D & swapchainExtent,
+			const vk::UniquePipelineLayout & pipelineLayout,
+			const vk::RenderPass & renderPass
+		);
+		
 		vk::ShaderModule createShaderModule(const vk::Device& device, const std::vector<char>& code);
-
 	};
 
 
