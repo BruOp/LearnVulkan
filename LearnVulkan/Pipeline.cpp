@@ -149,9 +149,7 @@ namespace vkr
 			pipelineInfo.renderPass = renderPass;
 			pipelineInfo.subpass = 0;
 
-			vk::PipelineCache pipelineCache{};
-
-			vk::UniquePipeline pipeline = device.createGraphicsPipelineUnique(pipelineCache, pipelineInfo);
+			vk::UniquePipeline pipeline = device.createGraphicsPipelineUnique(vk::PipelineCache{}, pipelineInfo);
 			return pipeline;
 		}
 
