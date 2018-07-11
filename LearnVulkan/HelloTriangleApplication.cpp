@@ -512,15 +512,13 @@ void HelloTriangleApplication::createGraphicsPipeline()
 	auto bindingDescription = Vertex::getBindingDescription();
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
-	pipelineLayout = vkr::GraphicsPipeline::createPipelineLayout(device, descriptorSetLayout);
+	pipelineLayout = vkr::GraphicsPipelineFactory::createPipelineLayout(device, descriptorSetLayout);
 
-	graphicsPipeline = vkr::GraphicsPipeline::createPipeline(
+	vkr::GraphicsPipelineFactory factory{ bindingDescription, attributeDescriptions, swapchainExtent };
+	graphicsPipeline = factory.createPipeline(
 		device,
 		vertShaderModule,
 		fragShaderModule,
-		bindingDescription,
-		attributeDescriptions,
-		swapchainExtent,
 		pipelineLayout,
 		renderPass
 	);
