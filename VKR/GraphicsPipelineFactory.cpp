@@ -1,4 +1,4 @@
-#include "Pipeline.h"
+#include "GraphicsPipelineFactory.h"
 
 namespace vkr
 {
@@ -31,7 +31,7 @@ namespace vkr
 	{
 		addShaderStage(vertShaderModule, vk::ShaderStageFlagBits::eVertex);
 		addShaderStage(fragShaderModule, vk::ShaderStageFlagBits::eFragment);
-		
+
 		// Create other multisampling state, color blend states, with reasonable defaults for now
 		multisamplingInfo.sampleShadingEnable = VK_FALSE;
 		multisamplingInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
@@ -101,7 +101,7 @@ namespace vkr
 		viewport.height = (float)swapchainExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		
+
 		scissor.offset = { 0, 0 };
 		scissor.extent = swapchainExtent;
 
@@ -136,5 +136,5 @@ namespace vkr
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 	}
-	
+
 };

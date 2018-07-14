@@ -104,7 +104,7 @@ void HelloTriangleApplication::drawFrame()
 	//	Return the image to the swap chain for presentation
 	uint32_t imageIndex;
 	presentQueue.waitIdle();
-	
+
 	vk::Result result = device.acquireNextImageKHR(
 		swapchain,
 		std::numeric_limits<uint32_t>::max(),
@@ -112,7 +112,7 @@ void HelloTriangleApplication::drawFrame()
 		vk::Fence{},
 		&imageIndex
 	);
-	
+
 	if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
 		recreateSwapChain();
 		return;
@@ -123,7 +123,7 @@ void HelloTriangleApplication::drawFrame()
 	updateUniformBuffer(imageIndex);
 
 	vk::SubmitInfo submitInfo = {};
-	
+
 	vk::Semaphore waitSemaphores[] = { imageAvailableSemaphore };
 	vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 	submitInfo.waitSemaphoreCount = 1;
@@ -196,7 +196,7 @@ void HelloTriangleApplication::cleanupSwapChain()
 	}
 
 	device.freeCommandBuffers(commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-	
+
 	device.destroyPipeline(graphicsPipeline.get());
 	device.destroyPipelineLayout(pipelineLayout.get());
 
@@ -269,39 +269,11 @@ void HelloTriangleApplication::createSurface()
 
 void HelloTriangleApplication::createLogicalDevice()
 {
-	QueueFamilyIndices indices = QueueHelpers::findQueueFamilies(physicalDevice, surface);
+	vkr::LogicalDeviceFactory factory{ physicalDevice, surface };
 
-	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-	std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
-
-	float queuePriority = 1.0f;
-	for (const int queueFamily : uniqueQueueFamilies) {
-		vk::DeviceQueueCreateInfo queueCreateInfo = {};
-		queueCreateInfo.queueFamilyIndex = queueFamily;
-		queueCreateInfo.queueCount = 1;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
-		queueCreateInfos.push_back(queueCreateInfo);
-	}
-
-	vk::PhysicalDeviceFeatures deviceFeatures = {};
-	vk:: DeviceCreateInfo createInfo = {};
-	createInfo.queueCreateInfoCount = static_cast<int>(queueCreateInfos.size());
-	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.pEnabledFeatures = &deviceFeatures;
-
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(QueueHelpers::deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = QueueHelpers::deviceExtensions.data();
-
-	if (enableValidationLayers) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	} else {
-		createInfo.enabledLayerCount = 0;
-	}
-
-	physicalDevice.createDevice(&createInfo, nullptr, &device);
-	device.getQueue(indices.graphicsFamily, 0, &graphicsQueue);
-	device.getQueue(indices.presentFamily, 0, &presentQueue);
+	device = factory.create(physicalDevice, surface);
+	graphicsQueue = factory.getGraphicsQueue(device);
+	presentQueue = factory.getPresentQueue(device);
 }
 
 void HelloTriangleApplication::setupDebugCallback()
@@ -362,7 +334,7 @@ bool HelloTriangleApplication::checkValidationLayerSupport()
 
 void HelloTriangleApplication::createSwapChain()
 {
-	SwapChainSupportDetails swapChainSupport = SwapChainSupportDetails::querySwapChainSupport(physicalDevice, surface);
+	vkr::SwapChainSupportDetails swapChainSupport{ physicalDevice, surface };
 
 	vk::SurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 	vk::PresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentationModes);
@@ -389,11 +361,11 @@ void HelloTriangleApplication::createSwapChain()
 	createInfo.imageArrayLayers = 1; // Always 1 unless you're creating stereoscopic
 	createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment; // Direct (no post processing) rendering
 
-	QueueFamilyIndices indices = QueueHelpers::findQueueFamilies(physicalDevice, surface);
+	vkr::QueueFamilyChecker checker{ physicalDevice, surface };
 
-	uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsFamily, (uint32_t)indices.presentFamily };
+	uint32_t queueFamilyIndices[] = { (uint32_t)checker.graphicsFamily, (uint32_t)checker.presentFamily };
 
-	if (indices.graphicsFamily != indices.presentFamily) {
+	if (checker.graphicsFamily != checker.presentFamily) {
 		createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
 		createInfo.queueFamilyIndexCount = 2;
 		createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -409,7 +381,7 @@ void HelloTriangleApplication::createSwapChain()
 
 	createInfo.presentMode = presentMode;
 	createInfo.setClipped(VK_TRUE);
-	
+
 	device.createSwapchainKHR(&createInfo, nullptr, &swapchain);
 
 	device.getSwapchainImagesKHR(swapchain, &imageCount, nullptr);
@@ -493,7 +465,7 @@ void HelloTriangleApplication::createDescriptorSetLayout()
 	uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
 	uboLayoutBinding.descriptorCount = 1;
 	uboLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eVertex;
-	
+
 	vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.bindingCount = 1;
 	layoutInfo.pBindings = &uboLayoutBinding;
@@ -540,17 +512,17 @@ void HelloTriangleApplication::createFramebuffers()
 		framebufferInfo.width = swapchainExtent.width;
 		framebufferInfo.height = swapchainExtent.height;
 		framebufferInfo.layers = 1;
-		
+
 		device.createFramebuffer(&framebufferInfo, nullptr, &swapChainFramebuffers[i]);
 	}
 }
 
 void HelloTriangleApplication::createCommandPool()
 {
-	QueueFamilyIndices queueFamilyIndices = QueueHelpers::findQueueFamilies(physicalDevice, surface);
+	vkr::QueueFamilyChecker checker{ physicalDevice, surface };
 
 	vk::CommandPoolCreateInfo poolInfo = {};
-	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
+	poolInfo.queueFamilyIndex = checker.graphicsFamily;
 	poolInfo.flags = vk::CommandPoolCreateFlagBits(0);
 
 	device.createCommandPool(&poolInfo, nullptr, &commandPool);
@@ -566,8 +538,8 @@ void HelloTriangleApplication::createVertexBuffer()
 	vk::DeviceMemory stagingBufferMemory;
 
 	createBuffer(size, stagingUsageFlags, properties, stagingBuffer, stagingBufferMemory);
-	
-	
+
+
 	void* data = device.mapMemory(stagingBufferMemory, 0, size);
 		memcpy(data, vertices.data(), (size_t)size);
 	device.unmapMemory(stagingBufferMemory);
@@ -577,7 +549,7 @@ void HelloTriangleApplication::createVertexBuffer()
 	createBuffer(size, vertexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
 
 	copyBuffer(stagingBuffer, vertexBuffer, size);
-	
+
 	device.destroyBuffer(stagingBuffer);
 	device.freeMemory(stagingBufferMemory);
 }
@@ -588,13 +560,13 @@ void HelloTriangleApplication::createIndexBuffer()
 
 	vk::Buffer stagingBuffer;
 	vk::DeviceMemory stagingBufferMemory;
-	
+
 	createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 	void* data = device.mapMemory(stagingBufferMemory, 0, bufferSize);
 		memcpy(data, indices.data(), (size_t)bufferSize);
 	device.unmapMemory(stagingBufferMemory);
-	
+
 	vk::BufferUsageFlags indexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
 	createBuffer(bufferSize, indexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
 
@@ -608,7 +580,7 @@ void HelloTriangleApplication::createUniformBuffers()
 	vk::DeviceSize bufferSize = sizeof(TransformationBufferObject);
 	auto usageFlags = vk::BufferUsageFlagBits::eUniformBuffer;
 	auto properties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-	
+
 	size_t numImages = swapchainImages.size();
 
 	uniformBuffers.resize(numImages);
@@ -653,7 +625,7 @@ void HelloTriangleApplication::createDescriptorSets()
 		bufferInfo.buffer = uniformBuffers[i];
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(TransformationBufferObject);
-		
+
 		vk::WriteDescriptorSet descriptorWrite = {};
 		descriptorWrite.dstSet = descriptorSets[i];
 		descriptorWrite.dstBinding = 0;
@@ -723,7 +695,7 @@ void HelloTriangleApplication::createCommandBuffers()
 void HelloTriangleApplication::createSemaphores()
 {
 	vk::SemaphoreCreateInfo semaphoreInfo = {};
-	
+
 	device.createSemaphore(&semaphoreInfo, nullptr, &imageAvailableSemaphore);
 	device.createSemaphore(&semaphoreInfo, nullptr, &renderFinishedSemaphore);
 }
@@ -752,7 +724,7 @@ void HelloTriangleApplication::createBuffer(vk::DeviceSize size, vk::BufferUsage
 	bufferInfo.size = size;
 	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = vk::SharingMode::eExclusive;
-	
+
 	device.createBuffer(&bufferInfo, nullptr, &buffer);
 
 	vk::MemoryRequirements memRequirements;
@@ -824,7 +796,7 @@ vk::ShaderModule HelloTriangleApplication::createShaderModule(const std::vector<
 	createInfo.codeSize = code.size();
 	// This cast is weird, not 100% sure why it's not a static cast.
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-	
+
 	vk::ShaderModule shaderModule;
 	device.createShaderModule(&createInfo, nullptr, &shaderModule) ;
 
@@ -889,7 +861,7 @@ uint32_t HelloTriangleApplication::findMemoryType(uint32_t typeFilter, vk::Memor
 		bool matchesTypeFilter = static_cast<bool>(typeFilter & (1 << i));
 		// Want to also check that the memory types have the required properties.
 		bool hasRequiredProperties = ((memProperties.memoryTypes[i].propertyFlags & properties) == properties);
-		
+
 		if (matchesTypeFilter && hasRequiredProperties) {
 			return i;
 		}
@@ -924,7 +896,7 @@ bool HelloTriangleApplication::isDeviceSuitable(const vk::PhysicalDevice& device
 {
 	vk::PhysicalDeviceProperties deviceProperties;
 	device.getProperties(&deviceProperties);
-	
+
 	vk::PhysicalDeviceFeatures deviceFeatures;
 	device.getFeatures(&deviceFeatures);
 

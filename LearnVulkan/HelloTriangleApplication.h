@@ -12,13 +12,13 @@
 #include <fstream>
 #include <chrono>
 
-#include "QueueFamilyIndices.h"
-#include "QueueHelpers.h"
 #include "SwapChainSupportDetails.h"
 #include "Vertex.h"
 #include "TransformationBufferObject.h"
 
-#include "Pipeline.h"
+#include "QueueFamilyChecker.h"
+#include "GraphicsPipelineFactory.h"
+#include "LogicalDeviceFactory.h"
 
 class HelloTriangleApplication
 {
@@ -115,7 +115,7 @@ private:
 	void createIndexBuffer();
 
 	void createUniformBuffers();
-	
+
 	void createDescriptorPool();
 
 	void createDescriptorSets();
