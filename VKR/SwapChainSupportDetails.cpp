@@ -43,6 +43,7 @@ namespace vkr
 		// If the above two tests fail then we'll just return the first available format
 		return formats[0];
 	}
+
 	vk::PresentModeKHR SwapChainSupportDetails::chooseSwapPresentMode()
 	{
 		vk::PresentModeKHR bestMode = vk::PresentModeKHR::eFifo;
@@ -56,6 +57,7 @@ namespace vkr
 
 		return bestMode;
 	}
+
 	vk::Extent2D SwapChainSupportDetails::chooseSwapExtent(const vkr::Window & window) const
 	{
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {

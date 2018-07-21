@@ -39,11 +39,8 @@ private:
 	vk::Device device;
 	vk::Queue graphicsQueue;
 	vk::Queue presentQueue; // 'Present' as in Presentation
-	vk::SwapchainKHR swapchain;
+	vkr::SwapChain swapchain;
 	vk::CommandPool commandPool;
-
-	vk::Format swapchainImageFormat;
-	vk::Extent2D swapchainExtent;
 
 	std::vector<vk::Image> swapchainImages;
 	std::vector<vk::ImageView> swapchainImageViews;

@@ -3,14 +3,22 @@
 
 namespace vkr
 {
-
-	SwapChainFactory::SwapChainFactory(
-		const vk::PhysicalDevice & physicalDevice,
-		const vk::SurfaceKHR & surface
-	) :
-		checker(physicalDevice, surface),
-		swapChainSupport(physicalDevice, surface)
+	SwapChain::SwapChain()
 	{
+	}
+
+	SwapChain::SwapChain(
+		const vk::Device & device,
+		const vk::PhysicalDevice & physicalDevice,
+		const vk::SurfaceKHR & surface,
+		const vkr::Window & window
+	)
+	{
+		vkr::SwapChainSupportDetails swapChainSupport{ physicalDevice, surface };
+		vkr::QueueFamilyChecker checker{ physicalDevice, surface };
+
+		swapChainExtent = swapChainSupport.chooseSwapExtent(window);
+		swapChainImageFormat = swapChainSupport.getSwapSurfaceFormat();
 		// We're trying to create a swap chain that is at least large enough to support the swap present
 		// mode we've chosen above, but not exceed the max.
 		imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -20,14 +28,7 @@ namespace vkr
 		if (maxImageCount > 0 && imageCount > maxImageCount) {
 			imageCount = maxImageCount;
 		}
-	}
 
-	vk::SwapchainKHR SwapChainFactory::create(
-		const vk::Device & device,
-		const vk::Extent2D & swapChainExtent,
-		const vk::SurfaceKHR & surface
-	)
-	{
 		auto surfaceFormat{ swapChainSupport.getSwapSurfaceFormat() };
 		auto presentMode{ swapChainSupport.chooseSwapPresentMode() };
 
@@ -41,8 +42,6 @@ namespace vkr
 		createInfo.imageExtent = swapChainExtent;
 		createInfo.imageArrayLayers = 1; // Always 1 unless you're creating stereoscopic
 		createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment; // Direct (no post processing) rendering
-
-
 
 		uint32_t queueFamilyIndices[] = { (uint32_t)checker.graphicsFamily, (uint32_t)checker.presentFamily };
 
@@ -63,22 +62,44 @@ namespace vkr
 		createInfo.presentMode = presentMode;
 		createInfo.setClipped(VK_TRUE);
 
-		vk::SwapchainKHR swapchain = device.createSwapchainKHR(createInfo);
-		return swapchain;
+		swapChain = device.createSwapchainKHRUnique(createInfo);
 	}
 
-	void SwapChainFactory::getSwapChainImages(
+	SwapChain::SwapChain(SwapChain && otherSwapChain)
+	{
+		imageCount = otherSwapChain.imageCount;
+		swapChainExtent = otherSwapChain.swapChainExtent;
+		swapChainImageFormat = otherSwapChain.swapChainImageFormat;
+		swapChain = std::move(otherSwapChain.swapChain);
+
+		otherSwapChain.swapChain = vk::UniqueSwapchainKHR{};
+	}
+
+	SwapChain & SwapChain::operator=(SwapChain && otherSwapChain)
+	{
+		if (this != &otherSwapChain) {
+			imageCount = otherSwapChain.imageCount;
+			swapChainExtent = otherSwapChain.swapChainExtent;
+			swapChainImageFormat = otherSwapChain.swapChainImageFormat;
+			swapChain = std::move(otherSwapChain.swapChain);
+
+			otherSwapChain.swapChain = vk::UniqueSwapchainKHR{};
+		}
+		return *this;
+	}
+
+	void SwapChain::destroy()
+	{
+		swapChain.destroy();
+	}
+
+	void SwapChain::getSwapChainImages(
 		const vk::Device & device,
-		const vk::SwapchainKHR swapchain,
 		std::vector<vk::Image>& swapChainImages
 	)
 	{
-		device.getSwapchainImagesKHR(swapchain, &imageCount, nullptr);
+		device.getSwapchainImagesKHR(swapChain.get(), &imageCount, nullptr);
 		swapChainImages.resize(imageCount);
-		device.getSwapchainImagesKHR(swapchain, &imageCount, swapChainImages.data());
-	}
-	vk::Extent2D SwapChainFactory::getSwapChainExtent(const vkr::Window & window) const
-	{
-		return swapChainSupport.chooseSwapExtent(window);
+		device.getSwapchainImagesKHR(swapChain.get(), &imageCount, swapChainImages.data());
 	}
 }

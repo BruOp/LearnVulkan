@@ -325,10 +325,8 @@ bool HelloTriangleApplication::checkValidationLayerSupport()
 
 void HelloTriangleApplication::createSwapChain()
 {
-	vkr::SwapChainFactory factory{ physicalDevice, surface };
-	swapchainExtent = factory.getSwapChainExtent(window);
-	swapchain = factory.create(device, swapchainExtent, surface);
-	factory.getSwapChainImages(device, swapchain, swapchainImages);
+	swapchain = vkr::SwapChain{ device, physicalDevice, surface, window };
+	swapchain.getSwapChainImages(device, swapchainImages);
 }
 
 void HelloTriangleApplication::createImageViews()
@@ -340,7 +338,7 @@ void HelloTriangleApplication::createImageViews()
 		createInfo.image = swapchainImages[i];
 
 		createInfo.viewType = vk::ImageViewType::e2D;
-		createInfo.format = swapchainImageFormat;
+		createInfo.format = swapchain.swapChainImageFormat.format;
 		// Default mapping for each channel;
 		createInfo.components.r = vk::ComponentSwizzle::eIdentity;
 		createInfo.components.g = vk::ComponentSwizzle::eIdentity;
@@ -360,7 +358,7 @@ void HelloTriangleApplication::createImageViews()
 void HelloTriangleApplication::createRenderPass()
 {
 	vk::AttachmentDescription colorAttachment = {};
-	colorAttachment.format = swapchainImageFormat;
+	colorAttachment.format = swapchain.swapChainImageFormat.format;
 	colorAttachment.samples = vk::SampleCountFlagBits::e1;
 	colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
 	colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
@@ -428,7 +426,7 @@ void HelloTriangleApplication::createGraphicsPipeline()
 
 	pipelineLayout = vkr::GraphicsPipelineFactory::createPipelineLayout(device, descriptorSetLayout);
 
-	vkr::GraphicsPipelineFactory factory{ bindingDescription, attributeDescriptions, swapchainExtent };
+	vkr::GraphicsPipelineFactory factory{ bindingDescription, attributeDescriptions, swapchain.swapChainExtent };
 	graphicsPipeline = factory.createPipeline(
 		device,
 		vertShaderModule,
@@ -451,8 +449,8 @@ void HelloTriangleApplication::createFramebuffers()
 		framebufferInfo.renderPass = renderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments;
-		framebufferInfo.width = swapchainExtent.width;
-		framebufferInfo.height = swapchainExtent.height;
+		framebufferInfo.width = swapchain.swapChainExtent.width;
+		framebufferInfo.height = swapchain.swapChainExtent.height;
 		framebufferInfo.layers = 1;
 
 		device.createFramebuffer(&framebufferInfo, nullptr, &swapChainFramebuffers[i]);
@@ -603,7 +601,7 @@ void HelloTriangleApplication::createCommandBuffers()
 		renderPassInfo.framebuffer = swapChainFramebuffers[i];
 
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = swapchainExtent;
+		renderPassInfo.renderArea.extent = swapchain.swapChainExtent;
 
 		vk::ClearValue clearColor = vk::ClearColorValue{ std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f } };
 		renderPassInfo.clearValueCount = 1;
@@ -644,7 +642,6 @@ void HelloTriangleApplication::createSemaphores()
 
 void HelloTriangleApplication::recreateSwapChain()
 {
-	int width, height;
 	if (window.getWidth() == 0 || window.getHeight() == 0) return;
 
 	device.waitIdle();
@@ -722,7 +719,7 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t currentImage)
 	TransformationBufferObject ubo = {};
 	ubo.model = glm::rotate(glm::mat4{ 1.0f }, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.view = glm::lookAt(glm::vec3(2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.projection = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 10.0f);
+	ubo.projection = glm::perspective(glm::radians(45.0f), swapchain.swapChainExtent.width / (float)swapchain.swapChainExtent.height, 0.1f, 10.0f);
 	ubo.projection[1][1] *= -1; // Compensating for the fact GLM was written for OpenGL
 
 	void* data;
