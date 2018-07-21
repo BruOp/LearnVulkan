@@ -55,14 +55,9 @@ void HelloTriangleApplication::run()
 
 void HelloTriangleApplication::initWindow()
 {
-	glfwInit();
-
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-	window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
-
-	glfwSetWindowUserPointer(window, this);
-	glfwSetWindowSizeCallback(window, HelloTriangleApplication::onWindowResize);
+	vkr::Window::initializeGLFW();
+	window = vkr::Window(width, height);
+	window.setResizeCallback(this, HelloTriangleApplication::onWindowResize);
 }
 
 void HelloTriangleApplication::initVulkan()
@@ -90,8 +85,8 @@ void HelloTriangleApplication::initVulkan()
 
 void HelloTriangleApplication::mainLoop()
 {
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
+	while (!window.shouldClose()) {
+		vkr::Window::pollWindowEvents();
 		drawFrame();
 	}
 	device.waitIdle();
@@ -184,9 +179,9 @@ void HelloTriangleApplication::cleanup()
 	DestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	instance.destroySurfaceKHR(surface);
 	instance.destroy();
-	glfwDestroyWindow(window);
+	window.destroy();
 
-	glfwTerminate();
+	vkr::Window::terminateGLFW();
 }
 
 void HelloTriangleApplication::cleanupSwapChain()
@@ -260,11 +255,7 @@ void HelloTriangleApplication::pickPhysicalDevice()
 
 void HelloTriangleApplication::createSurface()
 {
-	auto vanillaVkSurface = VkSurfaceKHR(surface);
-	if (glfwCreateWindowSurface(static_cast<VkInstance>(instance), window, nullptr, &vanillaVkSurface) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create a window surface!");
-	}
-	surface = vk::SurfaceKHR{ vanillaVkSurface };
+	surface = window.createWindowSurface(instance);
 }
 
 void HelloTriangleApplication::createLogicalDevice()
@@ -334,59 +325,10 @@ bool HelloTriangleApplication::checkValidationLayerSupport()
 
 void HelloTriangleApplication::createSwapChain()
 {
-	vkr::SwapChainSupportDetails swapChainSupport{ physicalDevice, surface };
-
-	vk::SurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-	vk::PresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentationModes);
-	swapchainExtent = chooseSwapExtent(swapChainSupport.capabilities);
-
-	swapchainImageFormat = surfaceFormat.format;
-
-	// We're trying to create a swap chain that is at least large enough to support the swap present
-	// mode we've chosen above, but not exceed the max.
-	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	const uint32_t maxImageCount = swapChainSupport.capabilities.maxImageCount;
-
-	// A max of 0 == unlimited
-	if (maxImageCount > 0 && imageCount > maxImageCount) {
-		imageCount = maxImageCount;
-	}
-
-	vk::SwapchainCreateInfoKHR createInfo = {};
-	createInfo.surface = surface;
-	createInfo.minImageCount = imageCount;
-	createInfo.imageFormat = surfaceFormat.format;
-	createInfo.imageColorSpace = surfaceFormat.colorSpace;
-	createInfo.imageExtent = swapchainExtent;
-	createInfo.imageArrayLayers = 1; // Always 1 unless you're creating stereoscopic
-	createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment; // Direct (no post processing) rendering
-
-	vkr::QueueFamilyChecker checker{ physicalDevice, surface };
-
-	uint32_t queueFamilyIndices[] = { (uint32_t)checker.graphicsFamily, (uint32_t)checker.presentFamily };
-
-	if (checker.graphicsFamily != checker.presentFamily) {
-		createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
-	} else {
-		createInfo.imageSharingMode = vk::SharingMode::eExclusive;
-		createInfo.queueFamilyIndexCount = 0; // Optional
-		createInfo.pQueueFamilyIndices = nullptr; // Optional
-	}
-
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-	// What type of alpha blending we're going to use
-	createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-
-	createInfo.presentMode = presentMode;
-	createInfo.setClipped(VK_TRUE);
-
-	device.createSwapchainKHR(&createInfo, nullptr, &swapchain);
-
-	device.getSwapchainImagesKHR(swapchain, &imageCount, nullptr);
-	swapchainImages.resize(imageCount);
-	device.getSwapchainImagesKHR(swapchain, &imageCount, swapchainImages.data());
+	vkr::SwapChainFactory factory{ physicalDevice, surface };
+	swapchainExtent = factory.getSwapChainExtent(window);
+	swapchain = factory.create(device, swapchainExtent, surface);
+	factory.getSwapChainImages(device, swapchain, swapchainImages);
 }
 
 void HelloTriangleApplication::createImageViews()
@@ -703,8 +645,7 @@ void HelloTriangleApplication::createSemaphores()
 void HelloTriangleApplication::recreateSwapChain()
 {
 	int width, height;
-	glfwGetWindowSize(window, &width, &height);
-	if (width == 0 || height == 0) return;
+	if (window.getWidth() == 0 || window.getHeight() == 0) return;
 
 	device.waitIdle();
 
@@ -801,52 +742,6 @@ vk::ShaderModule HelloTriangleApplication::createShaderModule(const std::vector<
 	device.createShaderModule(&createInfo, nullptr, &shaderModule) ;
 
 	return shaderModule;
-}
-
-vk::SurfaceFormatKHR HelloTriangleApplication::chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
-{
-	if (availableFormats.size() == 1 && availableFormats[0].format == vk::Format::eUndefined) {
-		return { vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear };
-	}
-
-	for (const auto& availableFormat : availableFormats) {
-		if (availableFormat.format == vk::Format::eB8G8R8A8Unorm&& availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
-			return availableFormat;
-		}
-	}
-
-	// If the above two tests fail then we'll just return the first available format
-	return availableFormats[0];
-}
-
-vk::PresentModeKHR HelloTriangleApplication::chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes)
-{
-	vk::PresentModeKHR bestMode = vk::PresentModeKHR::eFifo;
-	for (const auto& presentMode : availablePresentModes) {
-		if (presentMode == vk::PresentModeKHR::eMailbox) {
-			return presentMode;
-		} else if (presentMode == vk::PresentModeKHR::eImmediate) {
-			bestMode = presentMode;
-		}
-	}
-
-	return bestMode;
-}
-
-vk::Extent2D HelloTriangleApplication::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR & capabilities)
-{
-	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-		return capabilities.currentExtent;
-	} else {
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
-		vk::Extent2D actualExtent = { (uint32_t)width, (uint32_t)height };
-
-		actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
-		actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
-
-		return actualExtent;
-	}
 }
 
 uint32_t HelloTriangleApplication::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vulkan\vulkan.hpp>
-#include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <stdexcept>
@@ -19,6 +18,8 @@
 #include "QueueFamilyChecker.h"
 #include "GraphicsPipelineFactory.h"
 #include "LogicalDeviceFactory.h"
+#include "Window.h"
+#include "SwapChainFactory.h"
 
 class HelloTriangleApplication
 {
@@ -31,7 +32,7 @@ private:
 	int width, height;
 
 	vk::Instance instance;
-	GLFWwindow* window;
+	vkr::Window window;
 	VkDebugReportCallbackEXT callback; // Keeping this vanilla to spare myself some headaches
 	vk::SurfaceKHR surface;
 	vk::PhysicalDevice physicalDevice;
@@ -133,12 +134,6 @@ private:
 
 	vk::ShaderModule createShaderModule(const std::vector<char>& code);
 
-	vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
-
-	vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
-
-	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
-
 	uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
 	//static vk::DebugReportCallbackCreateInfoEXT::pfnCallback debugCallback()
@@ -157,5 +152,5 @@ private:
 
 	static std::vector<char> readFile(const std::string& filename);
 
-	static void onWindowResize(GLFWwindow* window, int width, int height);
+	static void onWindowResize(GLFWwindow * window, int width, int height);
 };

@@ -2,6 +2,7 @@
 
 #include<vulkan/vulkan.hpp>
 #include <vector>
+#include "Window.h"
 
 namespace vkr
 {
@@ -11,8 +12,11 @@ namespace vkr
 
 		vk::SurfaceCapabilitiesKHR capabilities;
 		std::vector<vk::SurfaceFormatKHR> formats;
-		std::vector<vk::PresentModeKHR> presentationModes;
+		std::vector<vk::PresentModeKHR> presentModes;
 
 		bool isAdequate() const;
+		vk::SurfaceFormatKHR getSwapSurfaceFormat();
+		vk::PresentModeKHR chooseSwapPresentMode();
+		vk::Extent2D chooseSwapExtent(const vkr::Window & window) const;
 	};
 }
