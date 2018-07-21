@@ -24,13 +24,13 @@ namespace vkr
 		SwapChain(SwapChain&& swapChain);
 		SwapChain& operator=(SwapChain&& swapChain);
 
-		void destroy();
+		void destroy(const vk::Device & device);
 
 		uint32_t imageCount;
 		vk::Extent2D swapChainExtent;
 		vk::SurfaceFormatKHR swapChainImageFormat;
 
-		inline operator vk::SwapchainKHR() const { return swapChain.get(); };
+		inline operator vk::SwapchainKHR() const { return swapChain; };
 
 		void getSwapChainImages(
 			const vk::Device & device,
@@ -38,7 +38,7 @@ namespace vkr
 		);
 
 	private:
-		vk::UniqueSwapchainKHR swapChain;
+		vk::SwapchainKHR swapChain;
 
 	};
 }

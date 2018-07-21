@@ -20,17 +20,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsPipelineFactory.cpp" />
+    <ClCompile Include="InstanceFactory.cpp" />
     <ClCompile Include="LogicalDeviceFactory.cpp" />
     <ClCompile Include="QueueFamilyChecker.cpp" />
-    <ClCompile Include="SwapChainFactory.cpp" />
+    <ClCompile Include="SwapChain.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GraphicsPipelineFactory.h" />
+    <ClInclude Include="InstanceFactory.h" />
     <ClInclude Include="LogicalDeviceFactory.h" />
     <ClInclude Include="QueueFamilyChecker.h" />
-    <ClInclude Include="SwapChainFactory.h" />
+    <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

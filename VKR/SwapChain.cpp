@@ -1,4 +1,4 @@
-#include "SwapChainFactory.h"
+#include "SwapChain.h"
 
 
 namespace vkr
@@ -62,7 +62,7 @@ namespace vkr
 		createInfo.presentMode = presentMode;
 		createInfo.setClipped(VK_TRUE);
 
-		swapChain = device.createSwapchainKHRUnique(createInfo);
+		swapChain = device.createSwapchainKHR(createInfo);
 	}
 
 	SwapChain::SwapChain(SwapChain && otherSwapChain)
@@ -72,7 +72,7 @@ namespace vkr
 		swapChainImageFormat = otherSwapChain.swapChainImageFormat;
 		swapChain = std::move(otherSwapChain.swapChain);
 
-		otherSwapChain.swapChain = vk::UniqueSwapchainKHR{};
+		otherSwapChain.swapChain = vk::SwapchainKHR{};
 	}
 
 	SwapChain & SwapChain::operator=(SwapChain && otherSwapChain)
@@ -83,14 +83,14 @@ namespace vkr
 			swapChainImageFormat = otherSwapChain.swapChainImageFormat;
 			swapChain = std::move(otherSwapChain.swapChain);
 
-			otherSwapChain.swapChain = vk::UniqueSwapchainKHR{};
+			otherSwapChain.swapChain = vk::SwapchainKHR{};
 		}
 		return *this;
 	}
 
-	void SwapChain::destroy()
+	void SwapChain::destroy(const vk::Device & device)
 	{
-		swapChain.destroy();
+		device.destroySwapchainKHR(swapChain);
 	}
 
 	void SwapChain::getSwapChainImages(
@@ -98,8 +98,8 @@ namespace vkr
 		std::vector<vk::Image>& swapChainImages
 	)
 	{
-		device.getSwapchainImagesKHR(swapChain.get(), &imageCount, nullptr);
+		device.getSwapchainImagesKHR(swapChain, &imageCount, nullptr);
 		swapChainImages.resize(imageCount);
-		device.getSwapchainImagesKHR(swapChain.get(), &imageCount, swapChainImages.data());
+		device.getSwapchainImagesKHR(swapChain, &imageCount, swapChainImages.data());
 	}
 }

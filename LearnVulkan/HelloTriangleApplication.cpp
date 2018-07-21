@@ -192,8 +192,8 @@ void HelloTriangleApplication::cleanupSwapChain()
 
 	device.freeCommandBuffers(commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
-	device.destroyPipeline(graphicsPipeline.get());
-	device.destroyPipelineLayout(pipelineLayout.get());
+	graphicsPipeline = vk::UniquePipeline();
+	pipelineLayout = vk::UniquePipelineLayout();
 
 	device.destroyRenderPass(renderPass);
 
@@ -201,36 +201,12 @@ void HelloTriangleApplication::cleanupSwapChain()
 		device.destroyImageView(imageView);
 	}
 
-	device.destroySwapchainKHR(swapchain);
+	swapchain.destroy(device);
 }
 
 void HelloTriangleApplication::createInstance()
 {
-	if (enableValidationLayers && !checkValidationLayerSupport()) {
-		throw std::runtime_error("validation layers requested, but not available!");
-	}
-
-	vk::ApplicationInfo appInfo = {};
-	appInfo.pApplicationName = "Hello Triangle";
-	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.pEngineName = "No Engine";
-	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_1;
-
-	vk::InstanceCreateInfo createInfo = {};
-	createInfo.pApplicationInfo = &appInfo;
-
-	auto extensions = getRequiredExtensions();
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
-
-	if (enableValidationLayers) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	} else {
-		createInfo.enabledLayerCount = 0;
-	}
-	instance = vk::createInstance(createInfo, nullptr);
+	instance = vkr::InstanceFactory::create(validationLayers);
 }
 
 void HelloTriangleApplication::pickPhysicalDevice()
@@ -279,48 +255,6 @@ void HelloTriangleApplication::setupDebugCallback()
 	if (res != VK_SUCCESS) {
 		throw std::runtime_error("Failed to set up debug callback");
 	}
-}
-
-std::vector<const char*> HelloTriangleApplication::getRequiredExtensions()
-{
-	std::vector<const char*> extensions;
-
-	unsigned int glfwExtensionCount = 0;
-	const char** glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-	for (unsigned int i = 0; i < glfwExtensionCount; i++) {
-		extensions.push_back(glfwExtensions[i]);
-	}
-
-	if (enableValidationLayers) {
-		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-	}
-
-	return extensions;
-}
-
-bool HelloTriangleApplication::checkValidationLayerSupport()
-{
-	uint32_t layerCount;
-	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-	std::vector<VkLayerProperties> availableLayers(layerCount);
-	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-	for (const char* layerName : validationLayers) {
-		auto& match = std::find_if(availableLayers.begin(), availableLayers.end(),
-			[layerName](const VkLayerProperties& layer) -> bool {
-			return std::strcmp(layer.layerName, layerName) == 0;
-		}
-		);
-
-		if (match == availableLayers.end()) {
-			return false;
-		}
-	}
-
-	return true;
 }
 
 void HelloTriangleApplication::createSwapChain()

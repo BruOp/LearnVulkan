@@ -14,12 +14,13 @@
 #include "SwapChainSupportDetails.h"
 #include "Vertex.h"
 #include "TransformationBufferObject.h"
-
+// VKR
+#include "InstanceFactory.h"
 #include "QueueFamilyChecker.h"
 #include "GraphicsPipelineFactory.h"
 #include "LogicalDeviceFactory.h"
 #include "Window.h"
-#include "SwapChainFactory.h"
+#include "SwapChain.h"
 
 class HelloTriangleApplication
 {
@@ -87,10 +88,6 @@ private:
 	void createSurface();
 
 	void createLogicalDevice();
-
-	bool checkValidationLayerSupport();
-
-	std::vector<const char*> getRequiredExtensions();
 
 	void setupDebugCallback();
 
