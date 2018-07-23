@@ -5,8 +5,8 @@ namespace vkr
 {
 	vk::Instance InstanceFactory::create(const std::vector<const char*> & validationLayers)
 	{
-		#ifdef NDEBUG
-			if (!checkValidationLayerSupport()) {
+		#ifndef NDEBUG
+			if (!checkValidationLayerSupport(validationLayers)) {
 				throw std::runtime_error("validation layers requested, but not available!");
 			}
 		#endif

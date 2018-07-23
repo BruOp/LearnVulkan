@@ -67,6 +67,7 @@ void HelloTriangleApplication::initVulkan()
 	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
+	createAllocator();
 	createSwapChain();
 	createImageViews();
 	createRenderPass();
@@ -160,20 +161,23 @@ void HelloTriangleApplication::cleanup()
 	device.destroyDescriptorSetLayout(descriptorSetLayout);
 
 	for (size_t i = 0; i < swapchainImages.size(); i++) {
-		device.destroyBuffer(uniformBuffers[i]);
-		device.freeMemory(uniformBuffersMemory[i]);
+		uniformBuffers[i].destroy(vulkanAllocator);
 	}
 
-	device.destroyBuffer(indexBuffer);
-	device.freeMemory(indexBufferMemory);
+    device.destroyBuffer(vertexBuffer);
+    device.freeMemory(vertexBufferMemory);
+	//indexBuffer.destroy(vulkanAllocator);
 
-	device.destroyBuffer(vertexBuffer);
-	device.freeMemory(vertexBufferMemory);
+    device.destroyBuffer(indexBuffer);
+    device.freeMemory(indexBufferMemory);
+	//vertexBuffer.destroy(vulkanAllocator);
 
 	device.destroySemaphore(renderFinishedSemaphore);
 	device.destroySemaphore(imageAvailableSemaphore);
 
 	device.destroyCommandPool(commandPool);
+
+	vmaDestroyAllocator(vulkanAllocator);
 
 	device.destroy();
 	DestroyDebugReportCallbackEXT(instance, callback, nullptr);
@@ -241,6 +245,17 @@ void HelloTriangleApplication::createLogicalDevice()
 	device = factory.create(physicalDevice, surface);
 	graphicsQueue = factory.getGraphicsQueue(device);
 	presentQueue = factory.getPresentQueue(device);
+
+
+}
+
+void HelloTriangleApplication::createAllocator()
+{
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device = device;
+
+	vmaCreateAllocator(&allocatorInfo, &vulkanAllocator);
 }
 
 void HelloTriangleApplication::setupDebugCallback()
@@ -405,63 +420,68 @@ void HelloTriangleApplication::createCommandPool()
 void HelloTriangleApplication::createVertexBuffer()
 {
 	vk::DeviceSize size = sizeof(vertices[0]) * vertices.size();
-	vk::BufferUsageFlags stagingUsageFlags = vk::BufferUsageFlagBits::eTransferSrc;
-	vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-	// Staging buffer that we load the data onto that's visible to our CPU
-	vk::Buffer stagingBuffer;
-	vk::DeviceMemory stagingBufferMemory;
+    vk::BufferUsageFlags stagingUsageFlags = vk::BufferUsageFlagBits::eTransferSrc;
+    vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+    // Staging buffer that we load the data onto that's visible to our CPU
+    vk::Buffer stagingBuffer;
+    vk::DeviceMemory stagingBufferMemory;
 
-	createBuffer(size, stagingUsageFlags, properties, stagingBuffer, stagingBufferMemory);
+    createBuffer(size, stagingUsageFlags, properties, stagingBuffer, stagingBufferMemory);
 
 
-	void* data = device.mapMemory(stagingBufferMemory, 0, size);
-		memcpy(data, vertices.data(), (size_t)size);
-	device.unmapMemory(stagingBufferMemory);
+    void* data = device.mapMemory(stagingBufferMemory, 0, size);
+    memcpy(data, vertices.data(), (size_t)size);
+    device.unmapMemory(stagingBufferMemory);
 
-	// This is our buffer located on our GPU, inaccessible to our CPU
-	vk::BufferUsageFlags vertexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
-	createBuffer(size, vertexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
+    // This is our buffer located on our GPU, inaccessible to our CPU
+    vk::BufferUsageFlags vertexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
+    createBuffer(size, vertexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
 
-	copyBuffer(stagingBuffer, vertexBuffer, size);
+    copyBuffer(stagingBuffer, vertexBuffer, size);
 
-	device.destroyBuffer(stagingBuffer);
-	device.freeMemory(stagingBufferMemory);
+    device.destroyBuffer(stagingBuffer);
+    device.freeMemory(stagingBufferMemory);
+
+	/*vkr::StagedBufferFactory factory{};
+	vertexBuffer = factory.create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices.data(), vulkanAllocator);*/
 }
 
 void HelloTriangleApplication::createIndexBuffer()
 {
-	vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
-	vk::Buffer stagingBuffer;
-	vk::DeviceMemory stagingBufferMemory;
+    vk::Buffer stagingBuffer;
+    vk::DeviceMemory stagingBufferMemory;
 
-	createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+    createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
-	void* data = device.mapMemory(stagingBufferMemory, 0, bufferSize);
-		memcpy(data, indices.data(), (size_t)bufferSize);
-	device.unmapMemory(stagingBufferMemory);
+    void* data = device.mapMemory(stagingBufferMemory, 0, bufferSize);
+    memcpy(data, indices.data(), (size_t)bufferSize);
+    device.unmapMemory(stagingBufferMemory);
 
-	vk::BufferUsageFlags indexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
-	createBuffer(bufferSize, indexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
+    vk::BufferUsageFlags indexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
+    createBuffer(bufferSize, indexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
 
-	copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-	device.destroyBuffer(stagingBuffer);
-	device.freeMemory(stagingBufferMemory);
+    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+    device.destroyBuffer(stagingBuffer);
+    device.freeMemory(stagingBufferMemory);
+
+    /*vk::DeviceSize size = sizeof(indices[0]) * indices.size();
+	vkr::StagedBufferFactory factory{};
+	indexBuffer = factory.create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, size, indices.data(), vulkanAllocator);*/
 }
 
 void HelloTriangleApplication::createUniformBuffers()
 {
 	vk::DeviceSize bufferSize = sizeof(TransformationBufferObject);
 	auto usageFlags = vk::BufferUsageFlagBits::eUniformBuffer;
-	auto properties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 
 	size_t numImages = swapchainImages.size();
 
 	uniformBuffers.resize(numImages);
-	uniformBuffersMemory.resize(numImages);
 
 	for (size_t i = 0; i < numImages; i++) {
-		createBuffer(bufferSize, usageFlags, properties, uniformBuffers[i], uniformBuffersMemory[i]);
+		uniformBuffers[i] = vkr::Buffer{ vulkanAllocator, bufferSize, usageFlags, VMA_MEMORY_USAGE_CPU_ONLY };
 	}
 }
 
@@ -496,7 +516,7 @@ void HelloTriangleApplication::createDescriptorSets()
 
 	for (size_t i = 0; i < count; i++) {
 		vk::DescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = uniformBuffers[i];
+		bufferInfo.buffer = uniformBuffers[i].get();
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(TransformationBufferObject);
 
@@ -592,55 +612,55 @@ void HelloTriangleApplication::recreateSwapChain()
 
 void HelloTriangleApplication::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory)
 {
-	vk::BufferCreateInfo bufferInfo = {};
-	bufferInfo.size = size;
-	bufferInfo.usage = usage;
-	bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+    vk::BufferCreateInfo bufferInfo = {};
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
-	device.createBuffer(&bufferInfo, nullptr, &buffer);
+    device.createBuffer(&bufferInfo, nullptr, &buffer);
 
-	vk::MemoryRequirements memRequirements;
-	device.getBufferMemoryRequirements(buffer, &memRequirements);
+    vk::MemoryRequirements memRequirements;
+    device.getBufferMemoryRequirements(buffer, &memRequirements);
 
-	vk::MemoryAllocateInfo allocInfo = {};
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+    vk::MemoryAllocateInfo allocInfo = {};
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-	device.allocateMemory(&allocInfo, nullptr, &bufferMemory);
-	device.bindBufferMemory(buffer, bufferMemory, 0);
+    device.allocateMemory(&allocInfo, nullptr, &bufferMemory);
+    device.bindBufferMemory(buffer, bufferMemory, 0);
 }
 
 void HelloTriangleApplication::copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
 {
-	vk::CommandBufferAllocateInfo allocInfo = {};
-	allocInfo.level = vk::CommandBufferLevel::ePrimary;
-	allocInfo.commandPool = commandPool;
-	allocInfo.commandBufferCount = 1;
+    vk::CommandBufferAllocateInfo allocInfo = {};
+    allocInfo.level = vk::CommandBufferLevel::ePrimary;
+    allocInfo.commandPool = commandPool;
+    allocInfo.commandBufferCount = 1;
 
-	vk::CommandBuffer commandBuffer;
-	device.allocateCommandBuffers(&allocInfo, &commandBuffer);
+    vk::CommandBuffer commandBuffer;
+    device.allocateCommandBuffers(&allocInfo, &commandBuffer);
 
-	vk::CommandBufferBeginInfo beginInfo = {};
-	beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+    vk::CommandBufferBeginInfo beginInfo = {};
+    beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
-	commandBuffer.begin(&beginInfo);
+    commandBuffer.begin(&beginInfo);
 
-	vk::BufferCopy copyRegion = {};
-	copyRegion.srcOffset = 0;
-	copyRegion.dstOffset = 0;
-	copyRegion.size = size;
-	commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copyRegion);
+    vk::BufferCopy copyRegion = {};
+    copyRegion.srcOffset = 0;
+    copyRegion.dstOffset = 0;
+    copyRegion.size = size;
+    commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copyRegion);
 
-	commandBuffer.end();
+    commandBuffer.end();
 
-	vk::SubmitInfo submitInfo = {};
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
+    vk::SubmitInfo submitInfo = {};
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
 
-	graphicsQueue.submit(1, &submitInfo, vk::Fence{});
-	graphicsQueue.waitIdle();
+    graphicsQueue.submit(1, &submitInfo, vk::Fence{});
+    graphicsQueue.waitIdle();
 
-	device.free(commandPool, 1, &commandBuffer);
+    device.free(commandPool, 1, &commandBuffer);
 }
 
 void HelloTriangleApplication::updateUniformBuffer(uint32_t currentImage)
@@ -656,10 +676,7 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t currentImage)
 	ubo.projection = glm::perspective(glm::radians(45.0f), swapchain.swapChainExtent.width / (float)swapchain.swapChainExtent.height, 0.1f, 10.0f);
 	ubo.projection[1][1] *= -1; // Compensating for the fact GLM was written for OpenGL
 
-	void* data;
-	data = device.mapMemory(uniformBuffersMemory[currentImage], 0, sizeof(ubo), (vk::MemoryMapFlagBits)0);
-	memcpy(data, &ubo, sizeof(ubo));
-	device.unmapMemory(uniformBuffersMemory[currentImage]);
+	uniformBuffers[currentImage].copyInto(vulkanAllocator, &ubo);
 }
 
 vk::ShaderModule HelloTriangleApplication::createShaderModule(const std::vector<char>& code)
@@ -736,7 +753,7 @@ std::vector<char> HelloTriangleApplication::readFile(const std::string & filenam
 	std::ifstream file{ filename, std::ios::ate | std::ios::binary };
 
 	if (!file.is_open()) {
-		throw std::runtime_error("failed to open file");
+		throw std::runtime_error("failed to open file" + filename);
 	}
 
 	size_t fileSize = static_cast<size_t>(file.tellg());

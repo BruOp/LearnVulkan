@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan\vulkan.hpp>
+#include <vma/vk_mem_alloc.h>
 
 #include <iostream>
 #include <stdexcept>
@@ -15,6 +16,8 @@
 #include "Vertex.h"
 #include "TransformationBufferObject.h"
 // VKR
+#include "Buffer.h"
+#include "StagedBuffer.h"
 #include "InstanceFactory.h"
 #include "QueueFamilyChecker.h"
 #include "GraphicsPipelineFactory.h"
@@ -32,6 +35,7 @@ public:
 private:
 	int width, height;
 
+	VmaAllocator vulkanAllocator;
 	vk::Instance instance;
 	vkr::Window window;
 	VkDebugReportCallbackEXT callback; // Keeping this vanilla to spare myself some headaches
@@ -56,13 +60,15 @@ private:
 	vk::Semaphore imageAvailableSemaphore;
 	vk::Semaphore renderFinishedSemaphore;
 
-	vk::Buffer vertexBuffer;
-	vk::DeviceMemory vertexBufferMemory;
-	vk::Buffer indexBuffer;
-	vk::DeviceMemory indexBufferMemory;
+    vk::Buffer vertexBuffer;
+    vk::DeviceMemory vertexBufferMemory;
+    vk::Buffer indexBuffer;
+    vk::DeviceMemory indexBufferMemory;
 
-	std::vector<vk::Buffer> uniformBuffers;
-	std::vector<vk::DeviceMemory> uniformBuffersMemory;
+	/*vkr::Buffer vertexBuffer;
+	vkr::Buffer indexBuffer;*/
+
+	std::vector<vkr::Buffer> uniformBuffers;
 
 	vk::DescriptorPool descriptorPool;
 	std::vector<vk::DescriptorSet> descriptorSets;
@@ -88,6 +94,8 @@ private:
 	void createSurface();
 
 	void createLogicalDevice();
+
+	void createAllocator();
 
 	void setupDebugCallback();
 
@@ -121,8 +129,8 @@ private:
 
 	void recreateSwapChain();
 
-	void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
-	void copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
+    void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
+    void copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 
 	void updateUniformBuffer(uint32_t currentImage);
 

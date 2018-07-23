@@ -38,7 +38,7 @@ namespace vkr
 		void setRasterizerCreateInfo(
 			const vk::PolygonMode polygonMode = vk::PolygonMode::eFill,
 			const vk::CullModeFlagBits cullMode = vk::CullModeFlagBits::eBack,
-			const vk::FrontFace frontFace = vk::FrontFace::eCounterClockwise
+			const vk::FrontFace frontFace = vk::FrontFace::eClockwise
 		);
 
 		static vk::UniquePipelineLayout createPipelineLayout(
@@ -50,7 +50,7 @@ namespace vkr
 
 	private:
 		std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
-		
+
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
 		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
 
@@ -58,7 +58,7 @@ namespace vkr
 		vk::Rect2D scissor;
 		vk::PipelineViewportStateCreateInfo viewportStateInfo;
 		vk::PipelineRasterizationStateCreateInfo rasterizerInfo;
-		
+
 		vk::PipelineMultisampleStateCreateInfo multisamplingInfo;
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment;
 		vk::PipelineColorBlendStateCreateInfo colorBlending;
