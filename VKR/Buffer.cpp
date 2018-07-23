@@ -2,75 +2,75 @@
 
 namespace vkr
 {
-	Buffer::Buffer() : buffer(VK_NULL_HANDLE), size(0) {}
+    Buffer::Buffer() : buffer(VK_NULL_HANDLE), size(0) {}
 
-	Buffer::Buffer(
-		const VmaAllocator & _allocator,
-		const vk::DeviceSize bufferSize,
-		const vk::BufferUsageFlags usage,
-		const VmaMemoryUsage memoryUsageFlags
-	) :
-		size(bufferSize)
-	{
-		vk::BufferCreateInfo bufferInfo = {};
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+    Buffer::Buffer(
+        const VmaAllocator & _allocator,
+        const vk::DeviceSize bufferSize,
+        const vk::BufferUsageFlags usage,
+        const VmaMemoryUsage memoryUsageFlags
+    ) :
+        size(bufferSize)
+    {
+        vk::BufferCreateInfo bufferInfo = {};
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
-		VmaAllocationCreateInfo allocInfo = {};
-		allocInfo.usage = memoryUsageFlags;
+        VmaAllocationCreateInfo allocInfo = {};
+        allocInfo.usage = memoryUsageFlags;
 
-		auto vanillaBufferInfo = (VkBufferCreateInfo)bufferInfo;
+        auto vanillaBufferInfo = (VkBufferCreateInfo)bufferInfo;
 
-		vmaCreateBuffer(_allocator, &vanillaBufferInfo, &allocInfo, &buffer, &allocation, nullptr);
-	}
+        vmaCreateBuffer(_allocator, &vanillaBufferInfo, &allocInfo, &buffer, &allocation, nullptr);
+    }
 
-	Buffer::Buffer(Buffer && otherBuffer)
-	{
-		buffer = otherBuffer.buffer;
-		allocation = otherBuffer.allocation;
-		size = otherBuffer.size;
+    Buffer::Buffer(Buffer && otherBuffer)
+    {
+        buffer = otherBuffer.buffer;
+        allocation = otherBuffer.allocation;
+        size = otherBuffer.size;
 
-		otherBuffer.buffer = VK_NULL_HANDLE;
-		otherBuffer.allocation = VmaAllocation();
-		otherBuffer.size = 0;
-	}
+        otherBuffer.buffer = VK_NULL_HANDLE;
+        otherBuffer.allocation = VmaAllocation();
+        otherBuffer.size = 0;
+    }
 
-	Buffer & Buffer::operator=(Buffer && otherBuffer)
-	{
-		if (this != &otherBuffer) {
-			buffer = otherBuffer.buffer;
-			allocation = otherBuffer.allocation;
-			size = otherBuffer.size;
+    Buffer & Buffer::operator=(Buffer && otherBuffer)
+    {
+        if (this != &otherBuffer) {
+            buffer = otherBuffer.buffer;
+            allocation = otherBuffer.allocation;
+            size = otherBuffer.size;
 
-			otherBuffer.buffer = VK_NULL_HANDLE;
-			otherBuffer.allocation = VmaAllocation();
-			otherBuffer.size = 0;
-		}
-		return *this;
-	}
+            otherBuffer.buffer = VK_NULL_HANDLE;
+            otherBuffer.allocation = VmaAllocation();
+            otherBuffer.size = 0;
+        }
+        return *this;
+    }
 
-	Buffer::operator vk::Buffer() const
-	{
-		return vk::Buffer(buffer);
-	}
+    Buffer::operator vk::Buffer() const
+    {
+        return vk::Buffer(buffer);
+    }
 
-	Buffer::operator VkBuffer() const
-	{
-		return buffer;
-	}
+    Buffer::operator VkBuffer() const
+    {
+        return buffer;
+    }
 
-	void Buffer::copyInto(const VmaAllocator & _allocator, const void* dataSrc)
-	{
-		void* mappedData;
-		vmaMapMemory(_allocator, allocation, &mappedData);
-		memcpy(mappedData, dataSrc, (size_t)size);
-		vmaUnmapMemory(_allocator, allocation);
-	}
+    void Buffer::copyInto(const VmaAllocator & _allocator, const void* dataSrc)
+    {
+        void* mappedData;
+        vmaMapMemory(_allocator, allocation, &mappedData);
+        memcpy(mappedData, dataSrc, (size_t)size);
+        vmaUnmapMemory(_allocator, allocation);
+    }
 
-	void Buffer::copyInto(const VmaAllocator & _allocator, const void* dataSrc, const size_t newSize)
-	{
-		void* mappedData;
+    void Buffer::copyInto(const VmaAllocator & _allocator, const void* dataSrc, const size_t newSize)
+    {
+        void* mappedData;
 
         if (vmaMapMemory(_allocator, allocation, &mappedData) != VK_SUCCESS) {
             throw std::runtime_error("COULD NOT MAP MEMORY");
@@ -78,10 +78,10 @@ namespace vkr
         memcpy(mappedData, dataSrc, newSize);
 
         vmaUnmapMemory(_allocator, allocation);
-	}
+    }
 
-	void Buffer::destroy(const VmaAllocator & _allocator)
-	{
-		vmaDestroyBuffer(_allocator, buffer, allocation);
-	}
+    void Buffer::destroy(const VmaAllocator & _allocator)
+    {
+        vmaDestroyBuffer(_allocator, buffer, allocation);
+    }
 }
