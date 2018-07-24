@@ -3,27 +3,24 @@
 #include "Buffer.h"
 
 namespace vkr {
-    class StagedBufferFactory
+    namespace StagedBufferFactory
     {
-    public:
         vkr::Buffer create(
-        const vk::Device & device,
-            const vk::CommandPool & commandPool,
-            const vk::Queue & graphicsQueue,
+            vk::Device & device,
+            vk::CommandPool & commandPool,
+            vk::Queue & graphicsQueue,
             const vk::BufferUsageFlags usageFlags,
             const vk::DeviceSize size,
             const void * dataSrc,
             const VmaAllocator & _allocator
         );
 
-    private:
-        vkr::Buffer stagingBuffer;
-
         void copyBuffer(
-            const vk::Device & device,
-            const vk::CommandPool & commandPool,
-            const vk::Queue & graphicsQueue,
-            const vkr::Buffer& gpuBuffer
+            vk::Device & device,
+            vk::CommandPool & commandPool,
+            vk::Queue & graphicsQueue,
+            vkr::Buffer& stagingBuffer,
+            vkr::Buffer& gpuBuffer
         );
     };
 }

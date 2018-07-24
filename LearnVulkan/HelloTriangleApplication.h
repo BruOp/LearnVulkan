@@ -62,11 +62,9 @@ private:
 
     vk::Buffer vertexBuffer;
     vk::DeviceMemory vertexBufferMemory;
-    vk::Buffer indexBuffer;
-    vk::DeviceMemory indexBufferMemory;
 
-	/*vkr::Buffer vertexBuffer;
-	vkr::Buffer indexBuffer;*/
+	// vkr::Buffer vertexBuffer;
+	vkr::Buffer indexBuffer;
 
 	std::vector<vkr::Buffer> uniformBuffers;
 

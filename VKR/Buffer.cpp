@@ -72,11 +72,8 @@ namespace vkr
     {
         void* mappedData;
 
-        if (vmaMapMemory(_allocator, allocation, &mappedData) != VK_SUCCESS) {
-            throw std::runtime_error("COULD NOT MAP MEMORY");
-        }
+        vmaMapMemory(_allocator, allocation, &mappedData);
         memcpy(mappedData, dataSrc, newSize);
-
         vmaUnmapMemory(_allocator, allocation);
     }
 
