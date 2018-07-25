@@ -60,10 +60,7 @@ private:
 	vk::Semaphore imageAvailableSemaphore;
 	vk::Semaphore renderFinishedSemaphore;
 
-    vk::Buffer vertexBuffer;
-    vk::DeviceMemory vertexBufferMemory;
-
-	// vkr::Buffer vertexBuffer;
+	 vkr::Buffer vertexBuffer;
 	vkr::Buffer indexBuffer;
 
 	std::vector<vkr::Buffer> uniformBuffers;

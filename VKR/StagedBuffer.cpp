@@ -18,7 +18,7 @@ namespace vkr
             // Staging buffer that we load the data onto that's visible to our CPU
             vk::BufferUsageFlags stagingUsageFlags = vk::BufferUsageFlagBits::eTransferSrc;
             vkr::Buffer stagingBuffer{ _allocator, size, stagingUsageFlags, VMA_MEMORY_USAGE_CPU_ONLY };
-            stagingBuffer.copyInto(_allocator, &dataSrc);
+            stagingBuffer.copyInto(_allocator, dataSrc);
 
             // This is our buffer located on our GPU, inaccessible to our CPU
             vk::BufferUsageFlags gpuBufferUsageFlags = vk::BufferUsageFlagBits::eTransferDst | usageFlags;

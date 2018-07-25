@@ -164,12 +164,7 @@ void HelloTriangleApplication::cleanup()
 		uniformBuffers[i].destroy(vulkanAllocator);
 	}
 
-    device.destroyBuffer(vertexBuffer);
-    device.freeMemory(vertexBufferMemory);
-	//vertexBuffer.destroy(vulkanAllocator);
-
-    /*device.destroyBuffer(indexBuffer);
-    device.freeMemory(indexBufferMemory);*/
+    vertexBuffer.destroy(vulkanAllocator);
 	indexBuffer.destroy(vulkanAllocator);
 
 	device.destroySemaphore(renderFinishedSemaphore);
@@ -420,52 +415,15 @@ void HelloTriangleApplication::createCommandPool()
 void HelloTriangleApplication::createVertexBuffer()
 {
 	vk::DeviceSize size = sizeof(vertices[0]) * vertices.size();
-    vk::BufferUsageFlags stagingUsageFlags = vk::BufferUsageFlagBits::eTransferSrc;
-    vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-    // Staging buffer that we load the data onto that's visible to our CPU
-    vk::Buffer stagingBuffer;
-    vk::DeviceMemory stagingBufferMemory;
-
-    createBuffer(size, stagingUsageFlags, properties, stagingBuffer, stagingBufferMemory);
-
-
-    void* data = device.mapMemory(stagingBufferMemory, 0, size);
-    memcpy(data, vertices.data(), (size_t)size);
-    device.unmapMemory(stagingBufferMemory);
-
-    // This is our buffer located on our GPU, inaccessible to our CPU
-    vk::BufferUsageFlags vertexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
-    createBuffer(size, vertexUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
-
-    copyBuffer(stagingBuffer, vertexBuffer, size);
-
-    device.destroyBuffer(stagingBuffer);
-    device.freeMemory(stagingBufferMemory);
-
-	/*vkr::StagedBufferFactory factory{};
-	vertexBuffer = factory.create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices.data(), vulkanAllocator);*/
+	vertexBuffer = vkr::StagedBufferFactory::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices.data(), vulkanAllocator);
 }
 
-    void HelloTriangleApplication::createIndexBuffer()
-    {
-        vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+void HelloTriangleApplication::createIndexBuffer()
+{
+    vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
-         //Staging buffer that we load the data onto that's visible to our CPU
-        vk::BufferUsageFlags stagingUsageFlags = vk::BufferUsageFlagBits::eTransferSrc;
-        vkr::Buffer stagingBuffer{ vulkanAllocator, bufferSize, stagingUsageFlags, VMA_MEMORY_USAGE_CPU_ONLY };
-
-        stagingBuffer.copyInto(vulkanAllocator, indices.data());
-
-         //This is our buffer located on our GPU, inaccessible to our CPU
-        vk::BufferUsageFlags indexUsageFlags = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
-        indexBuffer = vkr::Buffer{ vulkanAllocator, bufferSize, indexUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY };
-
-        vkr::StagedBufferFactory::copyBuffer(device, commandPool, graphicsQueue, stagingBuffer, indexBuffer);
-
-        stagingBuffer.destroy(vulkanAllocator);
-
-        //indexBuffer = vkr::StagedBufferFactory::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, size, indices.data(), vulkanAllocator);
-    }
+    indexBuffer = vkr::StagedBufferFactory::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices.data(), vulkanAllocator);
+}
 
 void HelloTriangleApplication::createUniformBuffers()
 {
@@ -477,7 +435,7 @@ void HelloTriangleApplication::createUniformBuffers()
 	uniformBuffers.resize(numImages);
 
 	for (size_t i = 0; i < numImages; i++) {
-		uniformBuffers[i] = vkr::Buffer{ vulkanAllocator, bufferSize, usageFlags, VMA_MEMORY_USAGE_CPU_ONLY };
+		uniformBuffers[i] = vkr::Buffer{ vulkanAllocator, bufferSize, usageFlags, VMA_MEMORY_USAGE_CPU_TO_GPU };
 	}
 }
 

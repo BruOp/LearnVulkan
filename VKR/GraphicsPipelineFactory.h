@@ -38,7 +38,7 @@ namespace vkr
 		void setRasterizerCreateInfo(
 			const vk::PolygonMode polygonMode = vk::PolygonMode::eFill,
 			const vk::CullModeFlagBits cullMode = vk::CullModeFlagBits::eBack,
-			const vk::FrontFace frontFace = vk::FrontFace::eClockwise
+			const vk::FrontFace frontFace = vk::FrontFace::eCounterClockwise
 		);
 
 		static vk::UniquePipelineLayout createPipelineLayout(
