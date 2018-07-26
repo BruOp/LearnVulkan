@@ -415,14 +415,14 @@ void HelloTriangleApplication::createCommandPool()
 void HelloTriangleApplication::createVertexBuffer()
 {
 	vk::DeviceSize size = sizeof(vertices[0]) * vertices.size();
-	vertexBuffer = vkr::StagedBufferFactory::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices.data(), vulkanAllocator);
+	vertexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices.data(), vulkanAllocator);
 }
 
 void HelloTriangleApplication::createIndexBuffer()
 {
     vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
-    indexBuffer = vkr::StagedBufferFactory::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices.data(), vulkanAllocator);
+    indexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices.data(), vulkanAllocator);
 }
 
 void HelloTriangleApplication::createUniformBuffers()

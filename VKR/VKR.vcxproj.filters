@@ -36,10 +36,10 @@
     <ClInclude Include="SwapChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StagedBuffer.h">
+    <ClInclude Include="Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Buffer.h">
+    <ClInclude Include="BufferUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,10 +65,10 @@
     <ClCompile Include="SwapChain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StagedBuffer.cpp">
+    <ClCompile Include="Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Buffer.cpp">
+    <ClCompile Include="BufferUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,7 +3,7 @@
 #include "Buffer.h"
 
 namespace vkr {
-    namespace StagedBufferFactory
+    namespace BufferUtils
     {
         vkr::Buffer create(
             vk::Device & device,

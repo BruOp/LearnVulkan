@@ -1,9 +1,9 @@
-#include "StagedBuffer.h"
+#include "BufferUtils.h"
 
 
 namespace vkr
 {
-    namespace StagedBufferFactory
+    namespace BufferUtils
     {
         vkr::Buffer create(
             vk::Device & device,

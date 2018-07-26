@@ -17,7 +17,7 @@
 #include "TransformationBufferObject.h"
 // VKR
 #include "Buffer.h"
-#include "StagedBuffer.h"
+#include "BufferUtils.h"
 #include "InstanceFactory.h"
 #include "QueueFamilyChecker.h"
 #include "GraphicsPipelineFactory.h"

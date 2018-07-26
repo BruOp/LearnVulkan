@@ -24,7 +24,7 @@
     <ClCompile Include="InstanceFactory.cpp" />
     <ClCompile Include="LogicalDeviceFactory.cpp" />
     <ClCompile Include="QueueFamilyChecker.cpp" />
-    <ClCompile Include="StagedBuffer.cpp" />
+    <ClCompile Include="BufferUtils.cpp" />
     <ClCompile Include="SwapChain.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -35,7 +35,7 @@
     <ClInclude Include="InstanceFactory.h" />
     <ClInclude Include="LogicalDeviceFactory.h" />
     <ClInclude Include="QueueFamilyChecker.h" />
-    <ClInclude Include="StagedBuffer.h" />
+    <ClInclude Include="BufferUtils.h" />
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="Window.h" />
