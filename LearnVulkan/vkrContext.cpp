@@ -415,14 +415,14 @@ void vkrContext::createCommandPool()
 void vkrContext::createVertexBuffer()
 {
 	vk::DeviceSize size = sizeof(vertices[0]) * vertices.size();
-	vertexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices.data(), vulkanAllocator);
+	vertexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices, vulkanAllocator);
 }
 
 void vkrContext::createIndexBuffer()
 {
     vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
-    indexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices.data(), vulkanAllocator);
+    indexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices, vulkanAllocator);
 }
 
 void vkrContext::createUniformBuffers()
@@ -562,59 +562,6 @@ void vkrContext::recreateSwapChain()
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandBuffers();
-}
-
-void vkrContext::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory)
-{
-    vk::BufferCreateInfo bufferInfo = {};
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = vk::SharingMode::eExclusive;
-
-    device.createBuffer(&bufferInfo, nullptr, &buffer);
-
-    vk::MemoryRequirements memRequirements;
-    device.getBufferMemoryRequirements(buffer, &memRequirements);
-
-    vk::MemoryAllocateInfo allocInfo = {};
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    device.allocateMemory(&allocInfo, nullptr, &bufferMemory);
-    device.bindBufferMemory(buffer, bufferMemory, 0);
-}
-
-void vkrContext::copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
-{
-    vk::CommandBufferAllocateInfo allocInfo = {};
-    allocInfo.level = vk::CommandBufferLevel::ePrimary;
-    allocInfo.commandPool = commandPool;
-    allocInfo.commandBufferCount = 1;
-
-    vk::CommandBuffer commandBuffer;
-    device.allocateCommandBuffers(&allocInfo, &commandBuffer);
-
-    vk::CommandBufferBeginInfo beginInfo = {};
-    beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-
-    commandBuffer.begin(&beginInfo);
-
-    vk::BufferCopy copyRegion = {};
-    copyRegion.srcOffset = 0;
-    copyRegion.dstOffset = 0;
-    copyRegion.size = size;
-    commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copyRegion);
-
-    commandBuffer.end();
-
-    vk::SubmitInfo submitInfo = {};
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    graphicsQueue.submit(1, &submitInfo, vk::Fence{});
-    graphicsQueue.waitIdle();
-
-    device.free(commandPool, 1, &commandBuffer);
 }
 
 void vkrContext::updateUniformBuffer(uint32_t currentImage)

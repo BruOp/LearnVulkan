@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
+
 namespace vkr
 {
     class Buffer
@@ -34,6 +35,7 @@ namespace vkr
         vk::DeviceSize size;
         VkBuffer buffer;
         VmaAllocation allocation;
+
     private:
     };
 }
