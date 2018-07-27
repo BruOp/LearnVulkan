@@ -25,10 +25,10 @@
 #include "Window.h"
 #include "SwapChain.h"
 
-class HelloTriangleApplication
+class vkrContext
 {
 public:
-	HelloTriangleApplication(const int width, const int height);
+	vkrContext(const int width, const int height);
 
 	void run();
 

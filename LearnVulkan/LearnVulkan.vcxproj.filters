@@ -21,20 +21,17 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HelloTriangleApplication.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TransformationBufferObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vkrContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HelloTriangleApplication.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TransformationBufferObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vkrContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -155,13 +155,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="HelloTriangleApplication.cpp" />
+    <ClCompile Include="vkrContext.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TransformationBufferObject.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HelloTriangleApplication.h" />
+    <ClInclude Include="vkrContext.h" />
     <ClInclude Include="TransformationBufferObject.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="vulkanHelpers.h" />
