@@ -67,6 +67,7 @@ void vkrContext::initVulkan()
 	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
+    initCommandManager();
 	createAllocator();
 	createSwapChain();
 	createImageViews();
@@ -74,7 +75,7 @@ void vkrContext::initVulkan()
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createFramebuffers();
-	createCommandPool();
+    createTextureImage();
 	createVertexBuffer();
 	createIndexBuffer();
 	createUniformBuffers();
@@ -99,7 +100,7 @@ void vkrContext::drawFrame()
 	//	Execute the command buffer with that image as attachment in the framebuffer
 	//	Return the image to the swap chain for presentation
 	uint32_t imageIndex;
-	presentQueue.waitIdle();
+	commandManager._presentQueue.waitIdle();
 
 	vk::Result result = device.acquireNextImageKHR(
 		swapchain,
@@ -133,7 +134,7 @@ void vkrContext::drawFrame()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	graphicsQueue.submit(1, &submitInfo, vk::Fence{});
+	commandManager._graphicsQueue.submit(1, &submitInfo, vk::Fence{});
 
 	vk::PresentInfoKHR presentInfo = {};
 	presentInfo.waitSemaphoreCount = 1;
@@ -144,7 +145,7 @@ void vkrContext::drawFrame()
 	presentInfo.pSwapchains = swapChains;
 	presentInfo.pImageIndices = &imageIndex;
 	presentInfo.pResults = nullptr;
-	result = presentQueue.presentKHR(&presentInfo);
+	result = commandManager._presentQueue.presentKHR(&presentInfo);
 
 	if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
 		recreateSwapChain();
@@ -156,6 +157,8 @@ void vkrContext::drawFrame()
 void vkrContext::cleanup()
 {
 	cleanupSwapChain();
+
+    textureImage.destroy(vulkanAllocator);
 
 	device.destroyDescriptorPool(descriptorPool);
 	device.destroyDescriptorSetLayout(descriptorSetLayout);
@@ -169,8 +172,6 @@ void vkrContext::cleanup()
 
 	device.destroySemaphore(renderFinishedSemaphore);
 	device.destroySemaphore(imageAvailableSemaphore);
-
-	device.destroyCommandPool(commandPool);
 
 	vmaDestroyAllocator(vulkanAllocator);
 
@@ -189,7 +190,7 @@ void vkrContext::cleanupSwapChain()
 		device.destroyFramebuffer(framebuffer);
 	}
 
-	device.freeCommandBuffers(commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+    commandManager.freeCommandBuffers(commandBuffers);
 
 	graphicsPipeline = vk::UniquePipeline();
 	pipelineLayout = vk::UniquePipelineLayout();
@@ -237,11 +238,13 @@ void vkrContext::createLogicalDevice()
 {
 	vkr::LogicalDeviceFactory factory{ physicalDevice, surface };
 
-	device = factory.create(physicalDevice, surface);
-	graphicsQueue = factory.getGraphicsQueue(device);
-	presentQueue = factory.getPresentQueue(device);
+    device = factory.create(physicalDevice, surface);
+}
 
-
+void vkrContext::initCommandManager()
+{
+    vkr::QueueFamilyChecker checker{ physicalDevice, surface };
+    commandManager = vkr::CommandManager{ device, checker };
 }
 
 void vkrContext::createAllocator()
@@ -401,28 +404,22 @@ void vkrContext::createFramebuffers()
 	}
 }
 
-void vkrContext::createCommandPool()
+void vkrContext::createTextureImage()
 {
-	vkr::QueueFamilyChecker checker{ physicalDevice, surface };
-
-	vk::CommandPoolCreateInfo poolInfo = {};
-	poolInfo.queueFamilyIndex = checker.graphicsFamily;
-	poolInfo.flags = vk::CommandPoolCreateFlagBits(0);
-
-	device.createCommandPool(&poolInfo, nullptr, &commandPool);
+    textureImage = vkr::Image("images/texture.jpg", vulkanAllocator, commandManager);
 }
 
 void vkrContext::createVertexBuffer()
 {
 	vk::DeviceSize size = sizeof(vertices[0]) * vertices.size();
-	vertexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices, vulkanAllocator);
+	vertexBuffer = vkr::BufferUtils::create(commandManager, vk::BufferUsageFlagBits::eVertexBuffer, size, vertices, vulkanAllocator);
 }
 
 void vkrContext::createIndexBuffer()
 {
     vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
-    indexBuffer = vkr::BufferUtils::create(device, commandPool, graphicsQueue, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices, vulkanAllocator);
+    indexBuffer = vkr::BufferUtils::create(commandManager, vk::BufferUsageFlagBits::eIndexBuffer, bufferSize, indices, vulkanAllocator);
 }
 
 void vkrContext::createUniformBuffers()
@@ -492,7 +489,7 @@ void vkrContext::createCommandBuffers()
 	commandBuffers.resize(swapChainFramebuffers.size());
 
 	vk::CommandBufferAllocateInfo allocInfo = {};
-	allocInfo.commandPool = commandPool;
+	allocInfo.commandPool = commandManager._commandPool;
 	allocInfo.level = vk::CommandBufferLevel::ePrimary;
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 

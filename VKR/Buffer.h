@@ -33,9 +33,9 @@ namespace vkr
         void copyInto(const VmaAllocator & _allocator, const void* dataSrc, const size_t newSize);
 
         vk::DeviceSize size;
+
         VkBuffer buffer;
         VmaAllocation allocation;
-
     private:
     };
 }

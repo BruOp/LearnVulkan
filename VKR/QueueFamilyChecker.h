@@ -10,6 +10,7 @@ namespace vkr
 	class QueueFamilyChecker
 	{
 	public:
+        QueueFamilyChecker();
 		QueueFamilyChecker(const vk::PhysicalDevice & phyDevice, const vk::SurfaceKHR & surface);
 
 		int graphicsFamily;

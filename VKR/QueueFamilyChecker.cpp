@@ -3,7 +3,14 @@
 
 namespace vkr
 {
-	QueueFamilyChecker::QueueFamilyChecker(
+    QueueFamilyChecker::QueueFamilyChecker() :
+        graphicsFamily(-1),
+        presentFamily(-1),
+        isSuitable(false)
+    {
+    }
+
+    QueueFamilyChecker::QueueFamilyChecker(
 		const vk::PhysicalDevice & device,
 		const vk::SurfaceKHR & surface
 	) :

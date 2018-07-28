@@ -1,15 +1,14 @@
 #pragma once
 
 #include "Buffer.h"
+#include "CommandManager.h"
 
 namespace vkr {
     namespace BufferUtils
     {
         template<typename ArrayProxy>
         vkr::Buffer create(
-            vk::Device & device,
-            vk::CommandPool & commandPool,
-            vk::Queue & graphicsQueue,
+            vkr::CommandManager & commandManager,
             const vk::BufferUsageFlags usageFlags,
             const vk::DeviceSize size,
             const ArrayProxy & data,
@@ -25,7 +24,7 @@ namespace vkr {
             vk::BufferUsageFlags gpuBufferUsageFlags = vk::BufferUsageFlagBits::eTransferDst | usageFlags;
             vkr::Buffer gpuBuffer{ _allocator, size, gpuBufferUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY };
 
-            copyBuffer(device, commandPool, graphicsQueue, stagingBuffer, gpuBuffer);
+            copyBuffer(commandManager, stagingBuffer, gpuBuffer);
 
             stagingBuffer.destroy(_allocator);
 
@@ -33,9 +32,7 @@ namespace vkr {
         };
 
         void copyBuffer(
-            vk::Device & device,
-            vk::CommandPool & commandPool,
-            vk::Queue & graphicsQueue,
+            vkr::CommandManager & commandManager,
             vkr::Buffer& stagingBuffer,
             vkr::Buffer& gpuBuffer
         );

@@ -20,9 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="CommandManager.cpp" />
     <ClCompile Include="GraphicsPipelineFactory.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="InstanceFactory.cpp" />
     <ClCompile Include="LogicalDeviceFactory.cpp" />
+    <ClCompile Include="CommandBufferUtils.cpp" />
     <ClCompile Include="QueueFamilyChecker.cpp" />
     <ClCompile Include="BufferUtils.cpp" />
     <ClCompile Include="SwapChain.cpp" />
@@ -31,9 +34,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.h" />
+    <ClInclude Include="CommandManager.h" />
     <ClInclude Include="GraphicsPipelineFactory.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="InstanceFactory.h" />
     <ClInclude Include="LogicalDeviceFactory.h" />
+    <ClInclude Include="CommandBufferUtils.h" />
     <ClInclude Include="QueueFamilyChecker.h" />
     <ClInclude Include="BufferUtils.h" />
     <ClInclude Include="SwapChain.h" />

@@ -18,12 +18,14 @@
 // VKR
 #include "Buffer.h"
 #include "BufferUtils.h"
+#include "Image.h"
 #include "InstanceFactory.h"
 #include "QueueFamilyChecker.h"
 #include "GraphicsPipelineFactory.h"
 #include "LogicalDeviceFactory.h"
 #include "Window.h"
 #include "SwapChain.h"
+#include "CommandManager.h"
 
 class vkrContext
 {
@@ -42,10 +44,10 @@ private:
 	vk::SurfaceKHR surface;
 	vk::PhysicalDevice physicalDevice;
 	vk::Device device;
-	vk::Queue graphicsQueue;
-	vk::Queue presentQueue; // 'Present' as in Presentation
 	vkr::SwapChain swapchain;
-	vk::CommandPool commandPool;
+
+    vkr::QueueFamilyChecker queueFamilyChecker;
+    vkr::CommandManager commandManager;
 
 	std::vector<vk::Image> swapchainImages;
 	std::vector<vk::ImageView> swapchainImageViews;
@@ -62,6 +64,8 @@ private:
 
 	vkr::Buffer vertexBuffer;
 	vkr::Buffer indexBuffer;
+
+    vkr::Image textureImage;
 
 	std::vector<vkr::Buffer> uniformBuffers;
 
@@ -90,6 +94,8 @@ private:
 
 	void createLogicalDevice();
 
+    void initCommandManager();
+
 	void createAllocator();
 
 	void setupDebugCallback();
@@ -106,7 +112,7 @@ private:
 
 	void createFramebuffers();
 
-	void createCommandPool();
+    void createTextureImage();
 
 	void createVertexBuffer();
 
@@ -123,9 +129,6 @@ private:
 	void createSemaphores();
 
 	void recreateSwapChain();
-
-    void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
-    void copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 
 	void updateUniformBuffer(uint32_t currentImage);
 
