@@ -1,4 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
 #include "Image.h"
 
 
@@ -14,43 +13,39 @@ namespace vkr
         vkr::CommandManager & commandManager
     ) : Image()
     {
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        _width = texWidth;
-        _height = texHeight;
-        vk::DeviceSize imageSize{ _width * _height * 4 }; // The pixels are laid out row by row with 4 bytes per pixel in the case of STBI_rgba_alpha
+        auto format = vk::Format::eR8G8B8A8Unorm;
+        vkr::ImageLoader::ImageInfo imageInfo{ vkr::ImageLoader::loadFromFile(filePath, format) };
 
-        if (!pixels) {
-            throw std::runtime_error("Failed to load texture image!");
-        }
+        _width = imageInfo.width;
+        _height = imageInfo.height;
+        vk::DeviceSize imageSize{ vkr::ImageLoader::getSize(imageInfo) }; // The pixels are laid out row by row with 4 bytes per pixel in the case of STBI_rgba_alpha
 
         vkr::Buffer stagingBuffer{ allocator, imageSize, vk::BufferUsageFlagBits::eTransferSrc, VMA_MEMORY_USAGE_CPU_ONLY };
-        stagingBuffer.copyInto(allocator, pixels);
+        stagingBuffer.copyInto(allocator, imageInfo.data);
 
-        stbi_image_free(pixels);
+        vkr::ImageLoader::freeData(imageInfo);
 
-        auto format = vk::Format::eR8G8B8A8Unorm;
         auto initialLayout = vk::ImageLayout::eUndefined;
         auto copyLayout = vk::ImageLayout::eTransferDstOptimal;
         auto finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-        vk::ImageCreateInfo imageInfo{};
-        imageInfo.imageType = vk::ImageType::e2D;
-        imageInfo.format = format;
-        imageInfo.extent = vk::Extent3D{ _width, _height, 1 };
-        imageInfo.tiling = vk::ImageTiling::eOptimal;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.initialLayout = initialLayout;
+        vk::ImageCreateInfo imageCreateInfo{};
+        imageCreateInfo.imageType = vk::ImageType::e2D;
+        imageCreateInfo.format = format;
+        imageCreateInfo.extent = vk::Extent3D{ _width, _height, 1 };
+        imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+        imageCreateInfo.mipLevels = 1;
+        imageCreateInfo.arrayLayers = 1;
+        imageCreateInfo.initialLayout = initialLayout;
 
-        imageInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
-        imageInfo.sharingMode = vk::SharingMode::eExclusive; // Only used by one queue family at a time
-        imageInfo.samples = vk::SampleCountFlagBits::e1;
+        imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
+        imageCreateInfo.sharingMode = vk::SharingMode::eExclusive; // Only used by one queue family at a time
+        imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
 
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        VkImageCreateInfo vanillaInfo = (VkImageCreateInfo)imageInfo;
+        VkImageCreateInfo vanillaInfo = (VkImageCreateInfo)imageCreateInfo;
         vmaCreateImage(allocator, &vanillaInfo, &allocInfo, &_image, &_allocation, nullptr);
 
         transitionImageLayout(commandManager, format, initialLayout, copyLayout);

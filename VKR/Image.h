@@ -1,8 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include <stb_image.h>
 #include <unordered_map>
 
+#include "ImageLoader.h"
 #include "Buffer.h"
 #include "CommandManager.h"
 

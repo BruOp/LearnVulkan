@@ -23,6 +23,8 @@
     <ClCompile Include="CommandManager.cpp" />
     <ClCompile Include="GraphicsPipelineFactory.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="ImageLoader.cpp" />
+    <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="InstanceFactory.cpp" />
     <ClCompile Include="LogicalDeviceFactory.cpp" />
     <ClCompile Include="CommandBufferUtils.cpp" />
@@ -30,6 +32,7 @@
     <ClCompile Include="BufferUtils.cpp" />
     <ClCompile Include="SwapChain.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +40,8 @@
     <ClInclude Include="CommandManager.h" />
     <ClInclude Include="GraphicsPipelineFactory.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="ImageLoader.h" />
+    <ClInclude Include="ImageView.h" />
     <ClInclude Include="InstanceFactory.h" />
     <ClInclude Include="LogicalDeviceFactory.h" />
     <ClInclude Include="CommandBufferUtils.h" />
@@ -44,6 +49,7 @@
     <ClInclude Include="BufferUtils.h" />
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
