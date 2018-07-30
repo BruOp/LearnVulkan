@@ -19,6 +19,8 @@
 #include "Buffer.h"
 #include "BufferUtils.h"
 #include "Image.h"
+#include "ImageView.h"
+#include "Texture.h"
 #include "InstanceFactory.h"
 #include "QueueFamilyChecker.h"
 #include "GraphicsPipelineFactory.h"
@@ -50,7 +52,7 @@ private:
     vkr::CommandManager commandManager;
 
 	std::vector<vk::Image> swapchainImages;
-	std::vector<vk::ImageView> swapchainImageViews;
+	std::vector<vkr::ImageView> swapchainImageViews;
 	std::vector<vk::Framebuffer> swapChainFramebuffers;
 	std::vector<vk::CommandBuffer> commandBuffers;
 
@@ -65,7 +67,7 @@ private:
 	vkr::Buffer vertexBuffer;
 	vkr::Buffer indexBuffer;
 
-    vkr::Image textureImage;
+    vkr::Texture texture;
 
 	std::vector<vkr::Buffer> uniformBuffers;
 

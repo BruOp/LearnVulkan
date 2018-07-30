@@ -15,7 +15,7 @@ namespace vkr
         Image(
             const std::string & filePath,
             const VmaAllocator & allocator,
-            vkr::CommandManager & commandManager
+            const vkr::CommandManager & commandManager
         );
 
         Image(const Image&) = delete;
@@ -27,23 +27,27 @@ namespace vkr
         void destroy(const VmaAllocator & allocator);
 
         void transitionImageLayout(
-            vkr::CommandManager & commandManager,
-            vk::Format format,
+            const vkr::CommandManager & commandManager,
             vk::ImageLayout oldLayout,
             vk::ImageLayout newLayout
         );
 
+        inline vk::Image get() const { return _image; };
+        inline vk::Format getFormat() const { return _format; }
+
         static const std::unordered_map<vk::ImageLayout, vk::AccessFlagBits> layoutToAccessMaskMap;
         static const std::unordered_map<vk::ImageLayout, vk::PipelineStageFlagBits> layoutToStageMap;
 
-    private:
+    protected:
         uint32_t _width, _height;
-        VkImage _image;
+        vk::Format _format;
+        vk::Image _image;
         VmaAllocation _allocation;
 
+    private:
         void copyBufferToImage(
             vkr::Buffer & buffer,
-            vkr::CommandManager & commandManager
+            const vkr::CommandManager & commandManager
         );
     };
 }

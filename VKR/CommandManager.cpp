@@ -67,7 +67,7 @@ namespace vkr
         _device.destroyCommandPool(_commandPool);
     }
 
-    void CommandManager::freeCommandBuffers(const std::vector<vk::CommandBuffer> & commandBuffers)
+    void CommandManager::freeCommandBuffers(const std::vector<vk::CommandBuffer> & commandBuffers) const
     {
         _device.freeCommandBuffers(
             _commandPool,
@@ -75,12 +75,12 @@ namespace vkr
             commandBuffers.data()
         );
     }
-    vk::CommandBuffer CommandManager::createOneTimeCommand()
+    vk::CommandBuffer CommandManager::createOneTimeCommand() const
     {
         return CommandBufferUtils::createOneTimeCommand(_device, _commandPool);
 
     }
-    void CommandManager::endCommandBuffer(vk::CommandBuffer & commandBuffer)
+    void CommandManager::endCommandBuffer(vk::CommandBuffer & commandBuffer) const
     {
         CommandBufferUtils::endCommandBuffer(commandBuffer, _device, _commandPool, _graphicsQueue);
     }

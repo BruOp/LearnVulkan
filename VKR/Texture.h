@@ -10,9 +10,10 @@ namespace vkr
     public:
         Texture();
         Texture(
-            const std::string & filePath,
+            const vk::Device & device,
             const VmaAllocator & allocator,
-            const vkr::CommandManager & commandManager
+            const vkr::CommandManager & commandManager,
+            const std::string & filePath
         );
 
         Texture(const Texture&) = delete;
@@ -21,9 +22,16 @@ namespace vkr
         Texture(Texture&& otherTexture);
         Texture& operator=(Texture&& otherTexture);
 
+        inline void destroy(const vk::Device & device, VmaAllocator & allocator) {
+            _image.destroy(allocator);
+            _imageView.destroy(device);
+            device.destroySampler(_sampler);
+        };
+
     private:
         vkr::Image _image;
         vkr::ImageView _imageView;
+        vk::Sampler _sampler;
         vk::Format _format = vk::Format::eR8G8B8A8Unorm;
     };
 }

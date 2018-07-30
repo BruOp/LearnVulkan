@@ -30,10 +30,10 @@ namespace vkr
 
         void destroy();
 
-        void freeCommandBuffers(const std::vector<vk::CommandBuffer> & commandBuffers);
+        void freeCommandBuffers(const std::vector<vk::CommandBuffer> & commandBuffers) const;
 
-        vk::CommandBuffer createOneTimeCommand();
-        void endCommandBuffer(vk::CommandBuffer & commandBuffer);
+        vk::CommandBuffer createOneTimeCommand() const;
+        void endCommandBuffer(vk::CommandBuffer & commandBuffer) const;
 
     };
 }

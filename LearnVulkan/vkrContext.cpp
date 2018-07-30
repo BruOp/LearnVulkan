@@ -158,7 +158,7 @@ void vkrContext::cleanup()
 {
 	cleanupSwapChain();
 
-    textureImage.destroy(vulkanAllocator);
+    texture.destroy(device, vulkanAllocator);
 
 	device.destroyDescriptorPool(descriptorPool);
 	device.destroyDescriptorSetLayout(descriptorSetLayout);
@@ -281,24 +281,7 @@ void vkrContext::createImageViews()
 	swapchainImageViews.resize(swapchainImages.size());
 
 	for (size_t i = 0; i < swapchainImages.size(); i++) {
-		vk::ImageViewCreateInfo createInfo = {};
-		createInfo.image = swapchainImages[i];
-
-		createInfo.viewType = vk::ImageViewType::e2D;
-		createInfo.format = swapchain.swapChainImageFormat.format;
-		// Default mapping for each channel;
-		createInfo.components.r = vk::ComponentSwizzle::eIdentity;
-		createInfo.components.g = vk::ComponentSwizzle::eIdentity;
-		createInfo.components.b = vk::ComponentSwizzle::eIdentity;
-		createInfo.components.a = vk::ComponentSwizzle::eIdentity;
-		// If we were working on a steroscopic 3D application then we might need multiple layers
-		createInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
-
-		device.createImageView(&createInfo, nullptr, &swapchainImageViews[i]);
+        swapchainImageViews[i] = vkr::ImageView(device, swapchainImages[i], vk::Format::eR8G8B8A8Unorm);
 	}
 }
 
@@ -406,7 +389,7 @@ void vkrContext::createFramebuffers()
 
 void vkrContext::createTextureImage()
 {
-    textureImage = vkr::Image("images/texture.jpg", vulkanAllocator, commandManager);
+    texture = vkr::Texture(device, vulkanAllocator, commandManager, "images/texture.jpg");
 }
 
 void vkrContext::createVertexBuffer()
@@ -638,11 +621,10 @@ bool vkrContext::isDeviceSuitable(const vk::PhysicalDevice& device)
 	vk::PhysicalDeviceProperties deviceProperties;
 	device.getProperties(&deviceProperties);
 
-	vk::PhysicalDeviceFeatures deviceFeatures;
-	device.getFeatures(&deviceFeatures);
+    vk::PhysicalDeviceFeatures deviceFeatures{ device.getFeatures() };
 
-	return (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) &&
-		deviceFeatures.geometryShader;
+	return (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+        && deviceFeatures.samplerAnisotropy;
 }
 
 std::vector<char> vkrContext::readFile(const std::string & filename)

@@ -4,7 +4,12 @@
 
 namespace vkr
 {
-    ImageLoader::ImageInfo ImageLoader::loadFromFile(const std::string & filePath, const vk::Format format)
+    ImageLoader::ImageLoader(const std::string & filePath, const vk::Format format) :
+        width(0),
+        height(0),
+        channels(0),
+        format(format),
+        data(nullptr)
     {
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, formatMap.at(format));
@@ -12,19 +17,22 @@ namespace vkr
         if (!pixels) {
             throw std::runtime_error("Failed to load texture image!");
         }
-        ImageLoader::ImageInfo imageInfo{ (uint32_t)texWidth, (uint32_t)texHeight, (uint32_t)texChannels, format, pixels };
-        return imageInfo;
+
+        width = (uint32_t)texWidth;
+        height = (uint32_t)texHeight;
+        channels = (uint32_t)texChannels;
+        data = pixels;
+
     }
 
-    void ImageLoader::freeData(ImageInfo & imageInfo)
+    ImageLoader::~ImageLoader()
     {
-        stbi_image_free(imageInfo.data);
-        imageInfo.data = nullptr;
+        stbi_image_free(data);
     }
 
-    vk::DeviceSize ImageLoader::getSize(const ImageInfo & imageInfo)
+    vk::DeviceSize ImageLoader::getSize()
     {
-        vk::DeviceSize deviceSize{ imageInfo.width * imageInfo.height * multiplierMap.at(imageInfo.format) };
+        vk::DeviceSize deviceSize{ width * height * multiplierMap.at(format) };
         return deviceSize;
     }
 }

@@ -7,24 +7,22 @@
 
 namespace vkr
 {
-    namespace ImageLoader
+    class ImageLoader
     {
-        struct ImageInfo
-        {
-            uint32_t width;
-            uint32_t height;
-            uint32_t channels;
-            vk::Format format;
-            stbi_uc * data;
-        };
+    public:
 
-        ImageInfo loadFromFile(const std::string & filePath, const vk::Format);
+        ImageLoader(const std::string & filePath, const vk::Format format);
+        ~ImageLoader();
 
-        void freeData(ImageInfo & imageInfo);
+        vk::DeviceSize getSize();
 
-        int getSTBFormat(const vk::Format);
-        vk::DeviceSize getSize(const ImageInfo & imageInfo);
+        uint32_t width;
+        uint32_t height;
+        uint32_t channels;
+        vk::Format format;
+        stbi_uc * data;
 
+    private:
         const std::unordered_map<vk::Format, int> formatMap = {
             { vk::Format::eR8G8B8A8Unorm, STBI_rgb_alpha }
         };

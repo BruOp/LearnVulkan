@@ -3,27 +3,29 @@
 
 namespace vkr
 {
-    Image::Image() : _image(VK_NULL_HANDLE), _allocation()
+    Image::Image() :
+        _width(0),
+        _height(0),
+        _image(vk::Image{}),
+        _allocation(),
+        _format(vk::Format::eR8G8B8A8Unorm)
     {
     }
 
     Image::Image(
         const std::string & filePath,
         const VmaAllocator & allocator,
-        vkr::CommandManager & commandManager
+        const vkr::CommandManager & commandManager
     ) : Image()
     {
-        auto format = vk::Format::eR8G8B8A8Unorm;
-        vkr::ImageLoader::ImageInfo imageInfo{ vkr::ImageLoader::loadFromFile(filePath, format) };
+        vkr::ImageLoader imageLoader{ filePath, _format };
 
-        _width = imageInfo.width;
-        _height = imageInfo.height;
-        vk::DeviceSize imageSize{ vkr::ImageLoader::getSize(imageInfo) }; // The pixels are laid out row by row with 4 bytes per pixel in the case of STBI_rgba_alpha
+        _width = imageLoader.width;
+        _height = imageLoader.height;
+        vk::DeviceSize imageSize{ imageLoader.getSize() }; // The pixels are laid out row by row with 4 bytes per pixel in the case of STBI_rgba_alpha
 
         vkr::Buffer stagingBuffer{ allocator, imageSize, vk::BufferUsageFlagBits::eTransferSrc, VMA_MEMORY_USAGE_CPU_ONLY };
-        stagingBuffer.copyInto(allocator, imageInfo.data);
-
-        vkr::ImageLoader::freeData(imageInfo);
+        stagingBuffer.copyInto(allocator, imageLoader.data);
 
         auto initialLayout = vk::ImageLayout::eUndefined;
         auto copyLayout = vk::ImageLayout::eTransferDstOptimal;
@@ -31,7 +33,7 @@ namespace vkr
 
         vk::ImageCreateInfo imageCreateInfo{};
         imageCreateInfo.imageType = vk::ImageType::e2D;
-        imageCreateInfo.format = format;
+        imageCreateInfo.format = _format;
         imageCreateInfo.extent = vk::Extent3D{ _width, _height, 1 };
         imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
         imageCreateInfo.mipLevels = 1;
@@ -42,17 +44,19 @@ namespace vkr
         imageCreateInfo.sharingMode = vk::SharingMode::eExclusive; // Only used by one queue family at a time
         imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
 
+        VkImage image;
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
         VkImageCreateInfo vanillaInfo = (VkImageCreateInfo)imageCreateInfo;
-        vmaCreateImage(allocator, &vanillaInfo, &allocInfo, &_image, &_allocation, nullptr);
 
-        transitionImageLayout(commandManager, format, initialLayout, copyLayout);
+        vmaCreateImage(allocator, &vanillaInfo, &allocInfo, &image, &_allocation, nullptr);
+        _image = image;
+
+        transitionImageLayout(commandManager, initialLayout, copyLayout);
 
         copyBufferToImage(stagingBuffer, commandManager);
 
-        transitionImageLayout(commandManager, format, copyLayout, finalLayout);
+        transitionImageLayout(commandManager, copyLayout, finalLayout);
 
         stagingBuffer.destroy(allocator);
     }
@@ -62,7 +66,7 @@ namespace vkr
         _image = otherImage._image;
         _allocation = otherImage._allocation;
 
-        otherImage._image = VK_NULL_HANDLE;
+        otherImage._image = vk::Image{};
         otherImage._allocation = VmaAllocation();
     }
 
@@ -72,7 +76,7 @@ namespace vkr
             _image = otherImage._image;
             _allocation = otherImage._allocation;
 
-            otherImage._image = VK_NULL_HANDLE;
+            otherImage._image = vk::Image{};
             otherImage._allocation = VmaAllocation();
         }
 
@@ -85,8 +89,7 @@ namespace vkr
     }
 
     void Image::transitionImageLayout(
-        vkr::CommandManager & commandManager,
-        vk::Format format,
+        const vkr::CommandManager & commandManager,
         vk::ImageLayout oldLayout,
         vk::ImageLayout newLayout
     )
@@ -119,10 +122,15 @@ namespace vkr
         commandManager.endCommandBuffer(command);
     }
 
-    void Image::copyBufferToImage(vkr::Buffer & buffer, vkr::CommandManager & commandManager)
+    void Image::copyBufferToImage(vkr::Buffer & buffer, const vkr::CommandManager & commandManager)
     {
         vk::CommandBuffer command{ commandManager.createOneTimeCommand() };
-        vk::ImageSubresourceLayers layers{ vk::ImageAspectFlagBits::eColor, 0U, 0U, 1U };
+        vk::ImageSubresourceLayers layers{
+            vk::ImageAspectFlagBits::eColor, //Aspect mask
+            0U, // mip level
+            0U, // base array layer
+            1U  // layer count
+        };
         vk::BufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0; // These two fields actually set padding, not actual lengths FYI

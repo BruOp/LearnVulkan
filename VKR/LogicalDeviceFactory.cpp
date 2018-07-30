@@ -26,6 +26,8 @@ namespace vkr
 		}
 
 		vk::PhysicalDeviceFeatures deviceFeatures = {};
+        deviceFeatures.samplerAnisotropy = VK_TRUE;
+
 		vk::DeviceCreateInfo createInfo = {};
 		createInfo.queueCreateInfoCount = static_cast<int>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
