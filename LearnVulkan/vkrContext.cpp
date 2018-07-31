@@ -330,17 +330,27 @@ void vkrContext::createRenderPass()
 
 void vkrContext::createDescriptorSetLayout()
 {
-	vk::DescriptorSetLayoutBinding uboLayoutBinding = {};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eVertex;
+    vk::DescriptorSetLayoutBinding uboLayoutBinding = {};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eVertex;
 
-	vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
-	layoutInfo.bindingCount = 1;
-	layoutInfo.pBindings = &uboLayoutBinding;
+    vk::DescriptorSetLayoutBinding samplerLayoutBinding = {
+        1, // binding
+        vk::DescriptorType::eCombinedImageSampler, // Descriptor type
+        1, //descriptor count
+        vk::ShaderStageFlagBits::eFragment
+    };
 
-	descriptorSetLayout = device.createDescriptorSetLayout(layoutInfo);
+    std::vector<vk::DescriptorSetLayoutBinding> bindings{ uboLayoutBinding, samplerLayoutBinding };
+    vk::DescriptorSetLayoutCreateInfo layoutInfo{
+        vk::DescriptorSetLayoutCreateFlags{},
+        (uint32_t)bindings.size(),
+        bindings.data()
+    };
+
+    descriptorSetLayout = device.createDescriptorSetLayout(layoutInfo);
 }
 
 void vkrContext::createGraphicsPipeline()
@@ -423,13 +433,16 @@ void vkrContext::createDescriptorPool()
 {
 	uint32_t count = static_cast<uint32_t>(swapchainImages.size());
 
-	vk::DescriptorPoolSize poolSize = {};
-	poolSize.type = vk::DescriptorType::eUniformBuffer;
-	poolSize.descriptorCount = count;
+	std::vector<vk::DescriptorPoolSize> poolSize(2);
+
+    poolSize[0].type = vk::DescriptorType::eUniformBuffer;
+	poolSize[0].descriptorCount = count;
+    poolSize[1].type = vk::DescriptorType::eCombinedImageSampler;
+    poolSize[1].descriptorCount = count;
 
 	vk::DescriptorPoolCreateInfo poolInfo = {};
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
+	poolInfo.pPoolSizes = poolSize.data();
 	poolInfo.maxSets = count;
 
 	descriptorPool = device.createDescriptorPool(poolInfo);
@@ -454,16 +467,25 @@ void vkrContext::createDescriptorSets()
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(TransformationBufferObject);
 
-		vk::WriteDescriptorSet descriptorWrite = {};
-		descriptorWrite.dstSet = descriptorSets[i];
-		descriptorWrite.dstBinding = 0;
-		descriptorWrite.dstArrayElement = 0;
+        vk::DescriptorImageInfo imageInfo{ texture.getImageInfo() };
 
-		descriptorWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
-		descriptorWrite.descriptorCount = 1;
-		descriptorWrite.pBufferInfo = &bufferInfo;
+        std::vector<vk::WriteDescriptorSet> descriptorWrites{2};
 
-		device.updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+		descriptorWrites[0].dstSet = descriptorSets[i];
+		descriptorWrites[0].dstBinding = 0;
+		descriptorWrites[0].dstArrayElement = 0;
+		descriptorWrites[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+		descriptorWrites[0].descriptorCount = 1;
+		descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+        descriptorWrites[1].dstSet = descriptorSets[i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].pImageInfo = &imageInfo;
+
+        device.updateDescriptorSets(descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 	}
 }
 

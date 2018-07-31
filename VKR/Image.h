@@ -21,8 +21,8 @@ namespace vkr
         Image(const Image&) = delete;
         Image& operator=(const Image&) = delete;
 
-        Image(Image&& otherImage);
-        Image& operator=(Image&& otherImage);
+        Image(Image&& otherImage) = default;
+        Image& operator=(Image&& otherImage) = default;
 
         void destroy(const VmaAllocator & allocator);
 

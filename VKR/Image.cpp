@@ -61,28 +61,6 @@ namespace vkr
         stagingBuffer.destroy(allocator);
     }
 
-    Image::Image(Image && otherImage)
-    {
-        _image = otherImage._image;
-        _allocation = otherImage._allocation;
-
-        otherImage._image = vk::Image{};
-        otherImage._allocation = VmaAllocation();
-    }
-
-    Image & Image::operator=(Image && otherImage)
-    {
-        if (this != &otherImage) {
-            _image = otherImage._image;
-            _allocation = otherImage._allocation;
-
-            otherImage._image = vk::Image{};
-            otherImage._allocation = VmaAllocation();
-        }
-
-        return *this;
-    }
-
     void Image::destroy(const VmaAllocator & allocator)
     {
         vmaDestroyImage(allocator, _image, _allocation);

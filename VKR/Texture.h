@@ -19,14 +19,16 @@ namespace vkr
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
 
-        Texture(Texture&& otherTexture);
-        Texture& operator=(Texture&& otherTexture);
+        Texture(Texture&& otherTexture) = default;
+        Texture& operator=(Texture&& otherTexture) = default;
 
         inline void destroy(const vk::Device & device, VmaAllocator & allocator) {
             _image.destroy(allocator);
             _imageView.destroy(device);
             device.destroySampler(_sampler);
         };
+
+        vk::DescriptorImageInfo getImageInfo() const;
 
     private:
         vkr::Image _image;

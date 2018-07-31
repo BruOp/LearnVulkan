@@ -39,28 +39,12 @@ namespace vkr
         _sampler = device.createSampler(samplerInfo);
     }
 
-    Texture::Texture(Texture && otherTexture)
+    vk::DescriptorImageInfo Texture::getImageInfo() const
     {
-        _image = std::move(otherTexture._image);
-        _imageView = otherTexture._imageView;
-        _format = otherTexture._format;
-
-        otherTexture._image = vkr::Image{};
-        otherTexture._imageView = vkr::ImageView{};
-        otherTexture._format = vk::Format{};
-    }
-
-    Texture & Texture::operator=(Texture && otherTexture)
-    {
-        if (this != &otherTexture) {
-            _image = std::move(otherTexture._image);
-            _imageView = otherTexture._imageView;
-            _format = otherTexture._format;
-
-            otherTexture._image = vkr::Image{};
-            otherTexture._imageView = vkr::ImageView{};
-            otherTexture._format = vk::Format{};
-        }
-        return *this;
+        vk::DescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        imageInfo.imageView = _imageView;
+        imageInfo.sampler = _sampler;
+        return imageInfo;
     }
 }
