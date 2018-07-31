@@ -5,10 +5,10 @@ namespace vkr
 {
 	Window::Window() : pWindow(nullptr), width(0), height(0) {}
 
-	Window::Window(const int _width, const int _height) :
+	Window::Window(const int width, const int height) :
 		pWindow(nullptr),
-		width(_width),
-		height(_height)
+		width(width),
+		height(height)
 	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -17,6 +17,8 @@ namespace vkr
 
 	Window::Window(Window && otherWindow)
 	{
+        width = otherWindow.width;
+        height = otherWindow.height;
 		pWindow = otherWindow.pWindow;
 		otherWindow.pWindow = nullptr;
 	}
@@ -24,6 +26,8 @@ namespace vkr
 	Window & Window::operator=(Window && otherWindow)
 	{
 		if (this != &otherWindow) {
+            width = otherWindow.width;
+            height = otherWindow.height;
 			pWindow = otherWindow.pWindow;
 			otherWindow.pWindow = nullptr;
 		}
