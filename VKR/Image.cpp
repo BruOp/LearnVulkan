@@ -84,7 +84,13 @@ namespace vkr
         barrier.setSrcAccessMask(layoutToAccessMaskMap.at(oldLayout));
         barrier.setDstAccessMask(layoutToAccessMaskMap.at(newLayout));
 
-        vk::ImageSubresourceRange subresourceRange{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+        vk::ImageSubresourceRange subresourceRange{
+            vk::ImageAspectFlagBits::eColor,
+            0, // mip level
+            1, // level count
+            0, // array layer
+            1  // layout count
+        };
 
         barrier.setSubresourceRange(subresourceRange);
 

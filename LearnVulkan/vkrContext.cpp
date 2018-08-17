@@ -29,10 +29,10 @@ void DestroyDebugReportCallbackEXT(vk::Instance instance, VkDebugReportCallbackE
 }
 
 const std::vector<Vertex> vertices = {
-	{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
-	{ {  0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
-	{ {  0.5f,  0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
-	{ { -0.5f,  0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
+    { { -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+	{ {  0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+	{ {  0.5f,  0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+	{ { -0.5f,  0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
 };
 
 const std::vector<uint16_t> indices = {
@@ -281,7 +281,7 @@ void vkrContext::createImageViews()
 	swapchainImageViews.resize(swapchainImages.size());
 
 	for (size_t i = 0; i < swapchainImages.size(); i++) {
-        swapchainImageViews[i] = vkr::ImageView(device, swapchainImages[i], vk::Format::eR8G8B8A8Unorm);
+        swapchainImageViews[i] = vkr::ImageView(device, swapchainImages[i], vk::Format::eB8G8R8A8Unorm);
 	}
 }
 
